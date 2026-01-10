@@ -1,0 +1,116 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Setup: Create Virtual Environment",
+            "type": "shell",
+            "command": "python3 -m venv venv && source venv/bin/activate && pip install --upgrade pip",
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Setup: Install Dependencies",
+            "type": "shell",
+            "command": "source venv/bin/activate && pip install -r requirements.txt",
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Data: Download NHANES",
+            "type": "shell",
+            "command": "source venv/bin/activate && python scripts/download_nhanes.py",
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "ML: Train Diabetes Model",
+            "type": "shell",
+            "command": "source venv/bin/activate && PYTHONPATH=${workspaceFolder} python src/ml/training/train_diabetes.py",
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "API: Start Server",
+            "type": "shell",
+            "command": "source venv/bin/activate && PYTHONPATH=${workspaceFolder} uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000",
+            "group": "build",
+            "isBackground": true,
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Test: Run All Tests",
+            "type": "shell",
+            "command": "source venv/bin/activate && PYTHONPATH=${workspaceFolder} pytest -v",
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Test: Run with Coverage",
+            "type": "shell",
+            "command": "source venv/bin/activate && PYTHONPATH=${workspaceFolder} pytest --cov=src --cov-report=html -v",
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Lint: Check Code",
+            "type": "shell",
+            "command": "source venv/bin/activate && flake8 src tests --max-line-length=100",
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Format: Black",
+            "type": "shell",
+            "command": "source venv/bin/activate && black src tests scripts config",
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Format: isort",
+            "type": "shell",
+            "command": "source venv/bin/activate && isort src tests scripts config",
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        }
+    ]
+}

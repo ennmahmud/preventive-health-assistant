@@ -1,0 +1,44 @@
+{
+    "recommendations": [
+        // Python Development
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.black-formatter",
+        "ms-python.isort",
+        "ms-python.flake8",
+        
+        // Jupyter Notebooks
+        "ms-toolsai.jupyter",
+        "ms-toolsai.jupyter-keymap",
+        "ms-toolsai.jupyter-renderers",
+        
+        // JavaScript/React
+        "dsznajder.es7-react-js-snippets",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        
+        // Git
+        "eamodio.gitlens",
+        "mhutchie.git-graph",
+        
+        // API Testing
+        "rangav.vscode-thunder-client",
+        
+        // Utilities
+        "streetsidesoftware.code-spell-checker",
+        "gruntfuggly.todo-tree",
+        "usernamehw.errorlens",
+        "christian-kohler.path-intellisense",
+        
+        // Markdown & Documentation
+        "yzhang.markdown-all-in-one",
+        "bierner.markdown-mermaid",
+        
+        // Docker (for future deployment)
+        "ms-azuretools.vscode-docker",
+        
+        // Data/CSV viewing
+        "mechatroner.rainbow-csv",
+        "GrapeCity.gc-excelviewer"
+    ]
+}

@@ -1,0 +1,48 @@
+.venv/
+venv/
+.env
+.env.*
+
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# macOS
+.DS_Store
+
+# Editor settings
+.vscode/
+.idea/
+*.swp
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# Python virtual envs
+venv/
+.venv/
+
+# Test / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Logs
+*.log
+
+# Models, raw data, and large artifacts
+data/raw/
+models/saved/
+*.joblib
+*.pkl
+*.h5
+preventive-health-assistant.zip
+
+# Misc
+__MACOSX/
