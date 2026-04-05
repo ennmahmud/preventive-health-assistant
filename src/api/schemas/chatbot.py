@@ -12,12 +12,14 @@ class ChatRequest(BaseModel):
     """Single-turn chat request."""
     message: str = Field(..., min_length=1, max_length=2000, description="User message")
     session_id: Optional[str] = Field(None, description="Session ID (omit to start a new session)")
+    user_id: Optional[str] = Field(None, description="Stable user UUID (from localStorage) for profile memory")
 
     class Config:
         json_schema_extra = {
             "example": {
                 "message": "Check my diabetes risk",
                 "session_id": None,
+                "user_id": None,
             }
         }
 
@@ -38,6 +40,7 @@ class ChatResponse(BaseModel):
     result: Optional[AssessmentResultSummary] = Field(
         None, description="Assessment result summary (present only when assessment_complete=True)"
     )
+    profile_updated: bool = Field(False, description="True when user profile was updated")
 
     class Config:
         json_schema_extra = {

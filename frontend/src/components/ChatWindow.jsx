@@ -16,8 +16,8 @@ const QUICK_STARTS = [
   'Assess my hypertension risk',
 ];
 
-export default function ChatWindow() {
-  const { messages, send, reset, isLoading, lastResult } = useChat();
+export default function ChatWindow({ userId = null, isReturningUser = false }) {
+  const { messages, send, reset, isLoading, lastResult } = useChat(userId);
   const bottomRef = useRef(null);
 
   // Auto-scroll to latest message
@@ -46,7 +46,7 @@ export default function ChatWindow() {
       {/* ── Message list ── */}
       <div className={styles.messages}>
         {isEmpty ? (
-          <Welcome onQuickStart={send} />
+          <Welcome onQuickStart={send} isReturningUser={isReturningUser} />
         ) : (
           <>
             {messages.map((msg) => (
@@ -74,15 +74,20 @@ export default function ChatWindow() {
 
 // ── Sub-components ─────────────────────────────────────────────────────────
 
-function Welcome({ onQuickStart }) {
+function Welcome({ onQuickStart, isReturningUser }) {
   return (
     <div className={styles.welcome}>
       <div className={styles.welcomeEmoji}>🩺</div>
-      <h2>How can I help you today?</h2>
+      <h2>{isReturningUser ? 'Welcome back!' : 'How can I help you today?'}</h2>
+      {isReturningUser && (
+        <div className={styles.returningBanner}>
+          ✅ Your profile is loaded — I&apos;ll skip questions you&apos;ve already answered.
+        </div>
+      )}
       <p>
-        I can assess your risk for <strong>diabetes</strong>,{' '}
+        I assess your risk for <strong>diabetes</strong>,{' '}
         <strong>cardiovascular disease</strong>, and{' '}
-        <strong>hypertension</strong> using validated ML models trained on NHANES data.
+        <strong>hypertension</strong> using lifestyle questions — no lab tests needed.
       </p>
       <div className={styles.quickStarts}>
         {QUICK_STARTS.map((q) => (

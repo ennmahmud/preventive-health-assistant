@@ -111,6 +111,17 @@
 
 .welcomeEmoji { font-size: 3.5rem; }
 
+.returningBanner {
+  background: color-mix(in srgb, var(--accent, #3b82f6) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent, #3b82f6) 35%, transparent);
+  color: var(--accent, #3b82f6);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  max-width: 420px;
+}
+
 .welcome h2 {
   font-size: 1.5rem;
   font-weight: 600;

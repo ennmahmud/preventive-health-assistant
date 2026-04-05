@@ -7,7 +7,7 @@ All responses are intentionally brief and conversational.
 Medical results always include a disclaimer.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 _DISCLAIMER = (
     "_Disclaimer: This is a screening tool, not medical advice. "
@@ -69,12 +69,12 @@ class ResponseGenerator:
     def greeting(self) -> str:
         return (
             "Hi there! I'm your Preventive Health Assistant. 👋\n\n"
-            "I can help you check your risk for:\n"
-            "• **Diabetes**\n"
-            "• **Cardiovascular disease (CVD / heart disease)**\n"
-            "• **Hypertension (high blood pressure)**\n\n"
-            "Just tell me what you'd like to check, e.g. *\"Check my diabetes risk\"* "
-            "or *\"How is my heart health?\"*"
+            "I can assess your risk for:\n"
+            "• **Diabetes** — based on your lifestyle, diet, and family history\n"
+            "• **Cardiovascular disease (CVD)** — heart attack and stroke risk\n"
+            "• **Hypertension** — your risk of developing high blood pressure\n\n"
+            "I'll ask you plain questions — no lab tests or medical knowledge needed.\n\n"
+            "What would you like to check? Or try the **Assessment** tab for a step-by-step form."
         )
 
     def help_message(self) -> str:
@@ -131,6 +131,27 @@ class ResponseGenerator:
     def ask_for_field(self, condition: str, field: str) -> str:
         prompt = _FIELD_PROMPTS.get(field, f"Could you tell me your {field.replace('_', ' ')}?")
         return prompt
+
+    def ask_lifestyle_question(self, question: Any) -> str:
+        """Format a QuestionDef as a conversational prompt with option hints."""
+        text = question.text
+        # For choice/yes_no questions, append compact option hint if not already in text
+        if question.response_type in ("choice", "yes_no") and question.options:
+            if "\n•" not in text and "\n*" not in text:
+                opts = " / ".join(f"*{o}*" for o in question.options)
+                text = f"{text}\n\n({opts})"
+        elif question.response_type == "scale":
+            text = f"{text}\n\nReply with a number from 1 to 5."
+        elif question.response_type == "numeric" and question.unit_hint:
+            text = f"{text} ({question.unit_hint})"
+        return text
+
+    def welcome_back(self, welcome_message: str, risk_summary: Optional[str] = None) -> str:
+        """Returning-user greeting injected before the condition intro."""
+        msg = welcome_message
+        if risk_summary:
+            msg += f"\n\n_{risk_summary}_"
+        return msg
 
     # ── Results ───────────────────────────────────────────────────────────────
 

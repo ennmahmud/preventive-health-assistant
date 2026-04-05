@@ -15,7 +15,7 @@
 import { useState, useCallback } from 'react';
 import { sendChatMessage, deleteSession } from '../utils/api';
 
-export default function useChat() {
+export default function useChat(userId = null) {
   const [messages, setMessages] = useState([]);
   const [sessionId, setSessionId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -32,7 +32,7 @@ export default function useChat() {
     setError(null);
 
     try {
-      const data = await sendChatMessage(text, sessionId);
+      const data = await sendChatMessage(text, sessionId, userId);
       setSessionId(data.session_id);
 
       const botMsg = {

@@ -1,0 +1,63 @@
+.bar {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  flex: 1;
+}
+
+.circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 2px solid var(--border);
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+  position: relative;
+  z-index: 1;
+}
+
+.done .circle {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.active .circle {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+.stepLabel {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.active .stepLabel { color: var(--accent); font-weight: 600; }
+
+.connector {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  right: -50%;
+  height: 2px;
+  background: var(--border);
+  z-index: 0;
+}
+
+.connectorDone { background: var(--accent); }
