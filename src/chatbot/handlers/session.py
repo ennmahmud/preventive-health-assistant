@@ -39,8 +39,21 @@ class Session:
         # Which condition we're currently collecting data for
         self.active_assessment: Optional[str] = None  # "diabetes" | "cvd" | "hypertension"
 
-        # Collected metrics accumulated from user messages
+        # Collected metrics accumulated from user messages (raw + derived clinical values)
         self.metrics: Dict[str, Any] = {}
+
+        # Lifestyle intermediate keys (activity_level, diet_quality, etc.)
+        # Separate from clinical metrics so we can track what questions are answered
+        self.lifestyle_answers: Dict[str, Any] = {}
+
+        # Stable user identity (UUID from localStorage) — persists across sessions
+        self.user_id: Optional[str] = None
+
+        # Pre-populated context from profile RAG retrieval
+        self.profile_context: Optional[Dict[str, Any]] = None
+
+        # Track which lifestyle questions have been asked this session
+        self.asked_question_ids: List[str] = []
 
         # Full conversation history
         self.history: List[Dict[str, str]] = []
@@ -56,9 +69,16 @@ class Session:
         self.metrics.update({k: v for k, v in new_metrics.items() if v is not None})
         self.touch()
 
+    def update_lifestyle(self, new_answers: Dict[str, Any]) -> None:
+        """Merge lifestyle intermediate keys into the session."""
+        self.lifestyle_answers.update({k: v for k, v in new_answers.items() if v is not None})
+        self.touch()
+
     def clear_metrics(self) -> None:
-        """Reset collected metrics (e.g. after a completed assessment)."""
+        """Reset collected metrics for a new assessment (preserve user_id and profile context)."""
         self.metrics = {}
+        self.lifestyle_answers = {}
+        self.asked_question_ids = []
         self.active_assessment = None
         self.touch()
 

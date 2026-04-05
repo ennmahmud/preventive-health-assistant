@@ -20,6 +20,8 @@ from src.api.routes.health import router as health_router
 from src.api.routes.cvd import router as cvd_router
 from src.api.routes.hypertension import router as hypertension_router
 from src.api.routes.chatbot import router as chatbot_router
+from src.api.routes.profile import router as profile_router
+from src.api.routes.assessment import router as assessment_router
 from src.api.services.prediction_service import prediction_service
 from src.api.services.cvd_prediction_service import cvd_prediction_service
 from src.api.services.hypertension_prediction_service import hypertension_prediction_service
@@ -135,6 +137,8 @@ app.include_router(health_router)
 app.include_router(cvd_router)
 app.include_router(hypertension_router)
 app.include_router(chatbot_router)
+app.include_router(profile_router)
+app.include_router(assessment_router)
 
 
 # ============== Root Endpoint ==============

@@ -51,6 +51,7 @@ async def chat(request: ChatRequest):
         outcome = _conversation_manager.handle_message(
             session_id=request.session_id,
             message=request.message,
+            user_id=request.user_id,
         )
     except Exception as e:
         logger.error("Chat handler error: %s", e, exc_info=True)
@@ -75,6 +76,7 @@ async def chat(request: ChatRequest):
         reply=outcome["reply"],
         assessment_complete=outcome["assessment_complete"],
         result=result_summary,
+        profile_updated=outcome.get("profile_updated", False),
     )
 
 

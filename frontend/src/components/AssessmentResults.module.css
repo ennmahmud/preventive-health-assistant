@@ -1,0 +1,154 @@
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 24px;
+  overflow-y: auto;
+  height: 100%;
+}
+
+.riskCard {
+  border: 2px solid;
+  border-radius: 12px;
+  padding: 16px;
+  background: var(--bg-secondary);
+}
+
+.riskHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.emoji { font-size: 2rem; }
+
+.conditionName { font-size: 0.8rem; color: var(--text-muted); }
+
+.riskCategory { font-size: 1.1rem; font-weight: 700; }
+
+.riskPct {
+  margin-left: auto;
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+.barTrack {
+  height: 8px;
+  background: var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.6s ease;
+}
+
+.disclaimer {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-style: italic;
+  margin: 0;
+}
+
+.section { display: flex; flex-direction: column; gap: 10px; }
+
+.sectionTitle {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.factors { display: flex; flex-direction: column; gap: 8px; }
+
+.factorRow {
+  display: grid;
+  grid-template-columns: 1fr 120px 70px;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+}
+
+.factorName { color: var(--text-primary); }
+
+.factorBar {
+  height: 6px;
+  background: var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.factorFill { height: 100%; border-radius: 999px; }
+
+.factorTag { font-size: 0.7rem; color: var(--text-muted); }
+
+.recs { display: flex; flex-direction: column; gap: 8px; }
+
+.rec {
+  display: flex;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  border-left: 3px solid var(--border);
+}
+
+.rec.high { border-left-color: #ef4444; }
+.rec.medium { border-left-color: #f59e0b; }
+.rec.low { border-left-color: #16a34a; }
+
+.recPriority { font-size: 1rem; flex-shrink: 0; padding-top: 1px; }
+
+.recText strong {
+  font-size: 0.78rem;
+  text-transform: capitalize;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.recText p {
+  margin: 0;
+  font-size: 0.84rem;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  padding-top: 4px;
+  flex-shrink: 0;
+}
+
+.newBtn {
+  padding: 10px 16px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.87rem;
+  transition: all 0.15s;
+}
+
+.newBtn:hover { color: var(--text-primary); border-color: var(--text-muted); }
+
+.chatBtn {
+  flex: 1;
+  padding: 10px 16px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.87rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.chatBtn:hover { opacity: 0.9; }
