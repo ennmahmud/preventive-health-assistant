@@ -30,6 +30,56 @@ _CONDITION_NAMES = {
     "hypertension": "hypertension",
 }
 
+_PLAIN_FACTOR_NAMES: Dict[str, str] = {
+    "hba1c":                  "blood sugar (HbA1c)",
+    "fasting_glucose":        "fasting blood sugar",
+    "bmi":                    "body weight (BMI)",
+    "age":                    "age",
+    "total_cholesterol":      "total cholesterol",
+    "hdl_cholesterol":        "HDL (good cholesterol)",
+    "systolic_bp":            "blood pressure",
+    "sedentary_minutes":      "sedentary time",
+    "vigorous_rec_minutes":   "vigorous exercise",
+    "moderate_rec_minutes":   "moderate exercise",
+    "walk_minutes":           "daily walking",
+    "smoking_status":         "smoking history",
+    "smoked_100":             "smoking history",
+    "alcohol_use":            "alcohol intake",
+    "diet_quality":           "diet quality",
+    "salt_intake":            "salt intake",
+    "sleep_hours":            "sleep",
+    "stress_level":           "stress level",
+    "family_diabetes":        "family history of diabetes",
+    "family_cvd":             "family history of heart disease",
+    "family_htn":             "family history of hypertension",
+    "waist_circumference":    "waist circumference",
+    "sugar_intake":           "sugar intake",
+    "diabetes":               "diabetes diagnosis",
+    "self_reported_hbp":      "high blood pressure history",
+    "self_reported_hchol":    "high cholesterol history",
+}
+
+_RISK_NARRATIVES: Dict[str, Dict[str, str]] = {
+    "diabetes": {
+        "Low":      "Your lifestyle profile suggests a low risk of developing type 2 diabetes. Keep up your healthy habits.",
+        "Moderate": "Some risk factors are present. Small diet and activity changes can meaningfully lower your risk.",
+        "High":     "Several risk factors are elevated. Talk to your doctor about blood sugar monitoring and lifestyle changes.",
+        "Very High":"Multiple significant risk factors detected. Please consult a healthcare professional soon.",
+    },
+    "cvd": {
+        "Low":      "Your cardiovascular risk looks low based on your lifestyle profile. Stay active and keep monitoring.",
+        "Moderate": "Some cardiovascular risk factors are present. Focus on diet, exercise, and stress management.",
+        "High":     "Your heart disease risk is elevated. A consultation with your doctor is strongly recommended.",
+        "Very High":"Multiple serious risk factors detected. Please seek medical advice as soon as possible.",
+    },
+    "hypertension": {
+        "Low":      "Your risk of developing high blood pressure appears low. Maintaining your current habits is key.",
+        "Moderate": "Some factors increase your hypertension risk. Reducing salt, managing stress, and staying active will help.",
+        "High":     "Your hypertension risk is elevated. A blood pressure check and lifestyle review with your doctor is advised.",
+        "Very High":"You have multiple significant risk factors for hypertension. Please see a healthcare professional soon.",
+    },
+}
+
 _FIELD_PROMPTS: Dict[str, str] = {
     "age":               "How old are you?",
     "gender":            "What is your biological sex? (male / female)",
@@ -156,7 +206,7 @@ class ResponseGenerator:
     # ── Results ───────────────────────────────────────────────────────────────
 
     def assessment_result(self, condition: str, result: Dict[str, Any]) -> str:
-        """Format a prediction result as a conversational reply."""
+        """Format a prediction result as a rich, proactive conversational reply."""
         risk = result.get("risk", {})
         category = risk.get("risk_category", "Unknown")
         pct = risk.get("risk_percentage", 0.0)
@@ -166,22 +216,40 @@ class ResponseGenerator:
         lines = [
             f"**{cond_name.capitalize()} Risk Assessment** {emoji}",
             "",
-            f"Your estimated risk: **{pct:.1f}%** ({category})",
+            f"Your estimated risk: **{pct:.1f}%** — **{category} Risk**",
             "",
         ]
 
-        # Add top contributing factor if explanation present
+        # Plain-language narrative for this risk level
+        narrative = _RISK_NARRATIVES.get(condition, {}).get(category, "")
+        if narrative:
+            lines += [narrative, ""]
+
+        # Explain what's driving the risk (translated to plain English)
         exp = result.get("explanation")
         if exp:
             top_risks = exp.get("top_risk_factors", [])
             top_protect = exp.get("top_protective_factors", [])
+
             if top_risks:
-                top_names = ", ".join(rf["feature"] for rf in top_risks[:2])
-                lines.append(f"**Main risk drivers:** {top_names}")
+                names = [_PLAIN_FACTOR_NAMES.get(f["feature"], f["feature"].replace("_", " ")) for f in top_risks[:3]]
+                lines.append(f"**What's increasing your risk:** {', '.join(names)}")
+
             if top_protect:
-                protect_names = ", ".join(pf["feature"] for pf in top_protect[:2])
-                lines.append(f"**Protective factors:** {protect_names}")
+                names = [_PLAIN_FACTOR_NAMES.get(f["feature"], f["feature"].replace("_", " ")) for f in top_protect[:3]]
+                lines.append(f"**What's protecting you:** {', '.join(names)}")
+
             lines.append("")
+
+        # Top recommendation (highest priority first)
+        recs = result.get("recommendations", [])
+        if recs:
+            high = [r for r in recs if r.get("priority") == "high"]
+            top_rec = (high or recs)[0]
+            lines += [
+                f"**Top action:** {top_rec.get('recommendation', '')}",
+                "",
+            ]
 
         lines.append(_DISCLAIMER)
         return "\n".join(lines)
@@ -248,8 +316,8 @@ class ResponseGenerator:
 
     def offer_followup(self) -> str:
         return (
-            "You can ask me:\n"
-            "• *\"What does that mean?\"* — for an explanation of this result\n"
-            "• *\"What should I do?\"* — for personalised recommendations\n"
-            "• Or start a new check: *\"Check my heart risk\"*, *\"Diabetes risk\"*, etc."
+            "Want to dig deeper? Ask me:\n"
+            "• *\"Explain my result\"* — full breakdown of what each factor means\n"
+            "• *\"What should I do?\"* — all personalised recommendations\n"
+            "• *\"Check my heart risk\"* / *\"Diabetes risk\"* / *\"Hypertension risk\"* — start another assessment"
         )
