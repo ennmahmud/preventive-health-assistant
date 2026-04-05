@@ -1,0 +1,23 @@
+/* Design tokens */
+:root {
+  --color-bg: #0f1117;
+  --color-surface: #1a1d27;
+  --color-surface-2: #22263a;
+  --color-border: #2e3350;
+  --color-text: #e8eaf0;
+  --color-text-muted: #8892aa;
+  --color-accent: #5b8dee;
+  --color-accent-hover: #7aa5f5;
+
+  --color-low: #22c55e;
+  --color-moderate: #eab308;
+  --color-high: #f97316;
+  --color-very-high: #ef4444;
+
+  --radius: 12px;
+  --radius-sm: 6px;
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}

@@ -320,6 +320,11 @@ class PredictionService:
         prediction = int(self.model.predict(features_df)[0])
         confidence = float(max(proba))
 
+        # Diabetes risk thresholds (ADA-informed, model-calibrated)
+        # Low <20%: below population average for screening concern
+        # Moderate 20-40%: elevated — lifestyle modification recommended
+        # High 40-60%: substantially elevated — clinical evaluation recommended
+        # Very High ≥60%: high likelihood — prompt medical referral
         if risk_probability < 0.2:
             category = "Low"
         elif risk_probability < 0.4:

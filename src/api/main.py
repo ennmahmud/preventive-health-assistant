@@ -15,8 +15,14 @@ from fastapi.responses import JSONResponse
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
+from config.settings import API_CONFIG
 from src.api.routes.health import router as health_router
+from src.api.routes.cvd import router as cvd_router
+from src.api.routes.hypertension import router as hypertension_router
+from src.api.routes.chatbot import router as chatbot_router
 from src.api.services.prediction_service import prediction_service
+from src.api.services.cvd_prediction_service import cvd_prediction_service
+from src.api.services.hypertension_prediction_service import hypertension_prediction_service
 
 # Configure logging
 logging.basicConfig(
@@ -47,7 +53,27 @@ async def lifespan(app: FastAPI):
         else:
             logger.warning("⚠ Failed to load diabetes risk model")
     except Exception as e:
-        logger.error(f"✗ Error loading model: {e}")
+        logger.error(f"✗ Error loading diabetes model: {e}")
+
+    # Load the CVD risk model (optional — trains separately)
+    try:
+        success = cvd_prediction_service.load_model()
+        if success:
+            logger.info("✓ CVD risk model loaded successfully")
+        else:
+            logger.warning("⚠ CVD model not found — run train_cvd.py to train it")
+    except Exception as e:
+        logger.error(f"✗ Error loading CVD model: {e}")
+
+    # Load the hypertension risk model (optional — trains separately)
+    try:
+        success = hypertension_prediction_service.load_model()
+        if success:
+            logger.info("✓ Hypertension risk model loaded successfully")
+        else:
+            logger.warning("⚠ Hypertension model not found — run train_hypertension.py to train it")
+    except Exception as e:
+        logger.error(f"✗ Error loading hypertension model: {e}")
 
     yield  # Application runs here
 
@@ -68,13 +94,10 @@ app = FastAPI(
 
 # ============== Middleware ==============
 
-# CORS - Allow frontend to call the API
+# CORS - Allow frontend to call the API (origins defined in config/settings.py)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",  # React dev server
-        "http://localhost:5173",  # Vite dev server
-    ],
+    allow_origins=API_CONFIG["cors_origins"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -109,6 +132,9 @@ async def global_exception_handler(request: Request, exc: Exception):
 # ============== Include Routers ==============
 
 app.include_router(health_router)
+app.include_router(cvd_router)
+app.include_router(hypertension_router)
+app.include_router(chatbot_router)
 
 
 # ============== Root Endpoint ==============
@@ -121,8 +147,13 @@ async def root():
         "version": "1.0.0",
         "documentation": "/docs",
         "endpoints": {
-            "diabetes_assessment": "/api/v1/health/diabetes/assess",
-            "quick_check": "/api/v1/health/diabetes/quick-check",
+            "diabetes_assessment":       "/api/v1/health/diabetes/assess",
+            "diabetes_quick_check":      "/api/v1/health/diabetes/quick-check",
+            "cvd_assessment":            "/api/v1/health/cvd/assess",
+            "cvd_quick_check":           "/api/v1/health/cvd/quick-check",
+            "hypertension_assessment":   "/api/v1/health/hypertension/assess",
+            "hypertension_quick_check":  "/api/v1/health/hypertension/quick-check",
+            "chat":                      "/api/v1/chat",
         }
     }
 

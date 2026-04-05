@@ -28,7 +28,7 @@ from tqdm import tqdm
 # Add project root to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
-# from config import NHANES_CONFIG, RAW_DATA_DIR
+from config import RAW_DATA_DIR
 
 # Configure logging
 logging.basicConfig(
@@ -197,7 +197,20 @@ class NHANESDownloader:
         # Note: CDC uses lowercase .xpt extension in new URL structure
         filename = f"{dataset_code}{suffix}.xpt"
 
-        return f"{self.BASE_URL}/{year}/DataFiles/{filename}"
+        return f"{self.BASE_URL}/Public/{year}/DataFiles/{filename}"
+
+    def _get_legacy_file_url(self, cycle: str, dataset_code: str) -> str:
+        """Return the older CDC URL (without Public/) as a fallback."""
+        cycle_info = {
+            "2013-2014": {"suffix": "_H", "year": "2013"},
+            "2015-2016": {"suffix": "_I", "year": "2015"},
+            "2017-2018": {"suffix": "_J", "year": "2017"},
+            "2019-2020": {"suffix": "_K", "year": "2019"},
+            "2021-2022": {"suffix": "_L", "year": "2021"},
+        }
+        info = cycle_info.get(cycle, {"suffix": "_J", "year": "2017"})
+        filename = f"{dataset_code}{info['suffix']}.xpt"
+        return f"{self.BASE_URL}/{info['year']}/DataFiles/{filename}"
 
     def _download_file(self, url: str, output_path: Path) -> bool:
         """
@@ -316,7 +329,13 @@ class NHANESDownloader:
         success = self._download_file(url, output_path)
 
         if not success:
-            # Try alternative URL patterns for 2019-2020
+            # Fallback 1: Try without Public/ (older CDC URL structure)
+            legacy_url = self._get_legacy_file_url(cycle, dataset_info.code)
+            logger.info(f"Trying legacy URL: {legacy_url}")
+            success = self._download_file(legacy_url, output_path)
+
+        if not success:
+            # Fallback 2: Alternative naming for 2019-2020 pre-pandemic data
             if cycle == "2019-2020":
                 alt_url = f"{self.BASE_URL}/{cycle}/P_{dataset_info.code}.XPT"
                 logger.info(f"Trying alternative URL: {alt_url}")

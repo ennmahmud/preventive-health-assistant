@@ -10,6 +10,7 @@ from .settings import (
     NHANES_CONFIG,
     DIABETES_CONFIG,
     CVD_CONFIG,
+    HYPERTENSION_CONFIG,
     API_CONFIG,
     LOGGING_CONFIG,
 )
@@ -24,6 +25,7 @@ __all__ = [
     "NHANES_CONFIG",
     "DIABETES_CONFIG",
     "CVD_CONFIG",
+    "HYPERTENSION_CONFIG",
     "API_CONFIG",
     "LOGGING_CONFIG",
 ]

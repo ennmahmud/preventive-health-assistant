@@ -97,12 +97,47 @@ CVD_CONFIG = {
     }
 }
 
+# Hypertension Risk Model Configuration
+HYPERTENSION_CONFIG = {
+    "target_variable": "hypertension_status",
+    "features": {
+        "demographic": ["age", "gender", "race_ethnicity", "education", "income_ratio"],
+        "anthropometric": ["bmi", "waist_circumference"],
+        "clinical": ["total_cholesterol", "hdl_cholesterol", "hba1c", "fasting_glucose"],
+        "lifestyle": ["smoking_status", "alcohol_use", "physical_activity_level"],
+        "derived": ["diabetes_indicator"],
+        # NOTE: blood pressure readings are EXCLUDED to avoid circularity
+        # (BP readings are used to DEFINE the target, not predict it)
+    },
+    "model_params": {
+        "n_estimators": 200,
+        "max_depth": 6,
+        "learning_rate": 0.1,
+        "subsample": 0.8,
+        "colsample_bytree": 0.8,
+        "random_state": 42,
+        "eval_metric": "auc",
+        "early_stopping_rounds": 20,
+    },
+    "validation": {
+        "test_size": 0.2,
+        "cv_folds": 5,
+        "target_accuracy": 0.75,  # Slightly lower target — harder without BP as feature
+        "target_auc": 0.78,
+    },
+}
+
 # API Configuration
 API_CONFIG = {
     "host": "0.0.0.0",
     "port": 8000,
     "debug": os.getenv("DEBUG", "False").lower() == "true",
-    "cors_origins": ["http://localhost:3000", "http://127.0.0.1:3000"],
+    "cors_origins": [
+        "http://localhost:3000",    # React CRA dev server
+        "http://127.0.0.1:3000",
+        "http://localhost:5173",    # Vite dev server
+        "http://127.0.0.1:5173",
+    ],
 }
 
 # Logging Configuration
