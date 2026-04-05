@@ -73,9 +73,11 @@ class HealthMetricsInput(BaseModel):
             return v
         weight = values.get('weight')
         height = values.get('height')
-        if weight and height:
-            height_m = height / 100
-            return round(weight / (height_m ** 2), 1)
+        if weight and height and height > 0:
+            calculated = round(weight / ((height / 100) ** 2), 1)
+            # Reject physiologically impossible values (e.g. height/weight swapped)
+            if 10.0 <= calculated <= 80.0:
+                return calculated
         return None
 
     class Config:

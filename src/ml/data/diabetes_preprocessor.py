@@ -47,8 +47,8 @@ NHANES_VARIABLE_MAP = {
     "height": "BMXHT",           # Standing height (cm)
     
     # Blood Pressure (BPX)
-    "systolic_bp": "BPXOSY1",    # Systolic BP - 1st oscillometric reading
-    "diastolic_bp": "BPXODI1",   # Diastolic BP - 1st oscillometric reading
+    "systolic_bp": "BPXSY1",     # Systolic BP - 1st reading
+    "diastolic_bp": "BPXDI1",    # Diastolic BP - 1st reading
     
     # Glycohemoglobin (GHB)
     "hba1c": "LBXGH",            # Glycohemoglobin (%)
@@ -202,10 +202,13 @@ class DiabetesPreprocessor:
             ).astype(int)
         
         # Smoking status (simplified)
+        # SMQ020: smoked ≥100 cigarettes in life (1=Yes)
+        # SMQ040: do you NOW smoke (1=Every day, 2=Some days, 3=Not at all)
         if 'smoked_100' in df.columns and 'current_smoker' in df.columns:
             df['smoking_status'] = 'Never'
             df.loc[df['smoked_100'] == 1, 'smoking_status'] = 'Former'
             df.loc[(df['smoked_100'] == 1) & (df['current_smoker'].isin([1, 2])), 'smoking_status'] = 'Current'
+            # isin([1, 2]) is correct: 1=Every day, 2=Some days — both count as current smoker
         
         # Physical activity level
         if all(col in df.columns for col in ['vigorous_work', 'moderate_work', 'vigorous_rec', 'moderate_rec']):
