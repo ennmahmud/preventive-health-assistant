@@ -426,6 +426,43 @@ class CVDPredictionService:
                 "source": "ACC/AHA Prevention Guidelines",
             })
 
+        # ── Baseline wellness recommendations (all risk levels) ──────────────
+        if not any(r["category"] == "exercise" for r in recs):
+            recs.append({
+                "category": "exercise",
+                "priority": "low",
+                "recommendation": "Keep up at least 150 min/week of moderate aerobic activity — it's your strongest heart protector",
+                "rationale": "Regular exercise reduces CVD risk by 20-35% regardless of baseline risk.",
+                "source": "AHA Physical Activity Guidelines",
+            })
+
+        if not any(r["category"] in ("cholesterol", "diet") for r in recs):
+            recs.append({
+                "category": "diet",
+                "priority": "low",
+                "recommendation": "Eat a heart-healthy diet: more fish, nuts, olive oil, vegetables; less red meat and saturated fat",
+                "rationale": "A Mediterranean-style diet reduces CVD events by ~30%.",
+                "source": "PREDIMED Trial / AHA",
+            })
+
+        if not any(r["category"] == "stress" for r in recs):
+            recs.append({
+                "category": "stress",
+                "priority": "low",
+                "recommendation": "Manage stress through regular physical activity, adequate sleep (7–8 hrs), and relaxation techniques",
+                "rationale": "Chronic stress raises cortisol, blood pressure, and inflammation — all CVD risk factors.",
+                "source": "AHA",
+            })
+
+        if not any(r["category"] == "medical" for r in recs):
+            recs.append({
+                "category": "medical",
+                "priority": "low",
+                "recommendation": "Have your blood pressure and cholesterol checked at least every 5 years (or annually if over 40)",
+                "rationale": "Silent risk factors like hypertension and high cholesterol have no symptoms until damage occurs.",
+                "source": "ACC/AHA Prevention Guidelines",
+            })
+
         return recs
 
     # ── Model info ─────────────────────────────────────────────────────────────

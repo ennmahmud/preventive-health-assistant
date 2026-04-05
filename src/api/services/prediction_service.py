@@ -464,6 +464,54 @@ class PredictionService:
                 "source": "Clinical Guidelines"
             })
 
+        # ── Baseline wellness recommendations (all risk levels) ──────────────
+        # Always give at least 3 actionable, relevant suggestions
+        sedentary = metrics.get("sedentary_minutes", 0)
+        if sedentary and sedentary > 360:
+            recommendations.append({
+                "category": "activity",
+                "priority": "medium",
+                "recommendation": "Break up long sitting periods — a 5-minute walk every hour reduces blood sugar spikes",
+                "rationale": "Prolonged sitting raises insulin resistance even in otherwise active people",
+                "source": "American Diabetes Association",
+            })
+
+        diet_glucose = metrics.get("fasting_glucose", 90)
+        if diet_glucose and diet_glucose >= 100:
+            recommendations.append({
+                "category": "diet",
+                "priority": "medium",
+                "recommendation": "Reduce refined carbs and sugary drinks; choose whole grains, legumes, and vegetables",
+                "rationale": "A low-glycaemic diet can reduce diabetes risk by up to 20%",
+                "source": "Diabetes Prevention Program",
+            })
+        elif not any(r["category"] == "diet" for r in recommendations):
+            recommendations.append({
+                "category": "diet",
+                "priority": "low",
+                "recommendation": "Keep up a balanced diet — plenty of vegetables, whole grains, and lean protein",
+                "rationale": "A healthy diet is the cornerstone of long-term diabetes prevention",
+                "source": "WHO Dietary Guidelines",
+            })
+
+        if not any(r["category"] == "activity" for r in recommendations):
+            recommendations.append({
+                "category": "activity",
+                "priority": "low",
+                "recommendation": "Maintain at least 150 min/week of moderate activity (brisk walking, cycling, swimming)",
+                "rationale": "Regular exercise improves insulin sensitivity and lowers blood sugar",
+                "source": "American Heart Association",
+            })
+
+        if not any(r["category"] == "medical" for r in recommendations):
+            recommendations.append({
+                "category": "medical",
+                "priority": "low",
+                "recommendation": "Get a fasting blood sugar or HbA1c check at your next annual health screening",
+                "rationale": "Early detection of prediabetes allows lifestyle changes that can reverse progression",
+                "source": "CDC Diabetes Prevention Program",
+            })
+
         return recommendations
 
     # ------------------------------------------------------------------

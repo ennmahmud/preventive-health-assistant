@@ -58,8 +58,8 @@ class QuestionFlow:
         profile: Optional["UserProfile"] = None,
     ) -> bool:
         """
-        True when minimum required fields are present AND at least one
-        strongly-recommended field is answered.
+        True when minimum required fields are present AND ALL strongly-recommended
+        fields are answered (so the bot asks the full lifestyle set before predicting).
         """
         known = {**self._profile_to_dict(profile), **answered}
 
@@ -68,9 +68,9 @@ class QuestionFlow:
             if f not in known:
                 return False
 
-        # Must have at least one strongly-recommended field for a meaningful result
+        # Must have ALL strongly-recommended fields for a meaningful result
         recommended = STRONGLY_RECOMMENDED.get(condition, [])
-        if recommended and not any(f in known for f in recommended):
+        if recommended and not all(f in known for f in recommended):
             return False
 
         return True

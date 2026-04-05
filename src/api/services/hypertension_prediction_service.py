@@ -413,6 +413,34 @@ class HypertensionPredictionService:
                 "source": "NICE Guidelines / JNC 8",
             })
 
+        # ── Baseline wellness recommendations (all risk levels) ──────────────
+        if not any(r["category"] == "activity" for r in recs):
+            recs.append({
+                "category": "activity",
+                "priority": "low",
+                "recommendation": "Stay physically active — 150 min/week of moderate exercise lowers blood pressure by 5-8 mmHg",
+                "rationale": "Regular aerobic activity is one of the most effective non-drug BP-lowering strategies.",
+                "source": "AHA / ESC Guidelines",
+            })
+
+        if not any(r["category"] == "stress" for r in recs):
+            recs.append({
+                "category": "stress",
+                "priority": "low",
+                "recommendation": "Practice stress management — chronic stress can raise blood pressure over time",
+                "rationale": "Relaxation techniques (deep breathing, meditation, yoga) can reduce systolic BP by 3-5 mmHg.",
+                "source": "AHA",
+            })
+
+        if not any(r["category"] == "medical" for r in recs):
+            recs.append({
+                "category": "medical",
+                "priority": "low",
+                "recommendation": "Check your blood pressure at least once a year — home monitors are inexpensive and accurate",
+                "rationale": "Hypertension is often symptom-free; regular checks are the only way to catch it early.",
+                "source": "NICE Guidelines",
+            })
+
         return recs
 
     # ── Model info ─────────────────────────────────────────────────────────────
