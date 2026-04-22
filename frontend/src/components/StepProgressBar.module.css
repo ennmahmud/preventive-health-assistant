@@ -21,34 +21,37 @@
   justify-content: center;
   font-size: 0.75rem;
   font-weight: 700;
-  border: 2px solid var(--border);
-  background: var(--bg-secondary);
-  color: var(--text-muted);
+  border: 2px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
   position: relative;
   z-index: 1;
+  transition: all 0.2s;
 }
 
 .done .circle {
-  background: var(--accent);
-  border-color: var(--accent);
+  background: var(--color-accent);
+  border-color: var(--color-accent);
   color: white;
 }
 
 .active .circle {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 20%, transparent);
 }
 
 .stepLabel {
   font-size: 0.65rem;
-  color: var(--text-muted);
-  margin-top: 4px;
+  color: var(--color-text-muted);
+  margin-top: 5px;
   text-align: center;
   white-space: nowrap;
 }
 
-.active .stepLabel { color: var(--accent); font-weight: 600; }
+.active .stepLabel { color: var(--color-accent); font-weight: 600; }
+.done .stepLabel { color: var(--color-text-muted); }
 
 .connector {
   position: absolute;
@@ -56,8 +59,9 @@
   left: 50%;
   right: -50%;
   height: 2px;
-  background: var(--border);
+  background: var(--color-border);
   z-index: 0;
+  transition: background 0.3s;
 }
 
-.connectorDone { background: var(--accent); }
+.connectorDone { background: var(--color-accent); }

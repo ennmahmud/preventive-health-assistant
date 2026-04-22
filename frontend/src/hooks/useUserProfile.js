@@ -1,10 +1,4 @@
-/**
- * useUserProfile — manages the stable user identity and profile.
- *
- * - Generates a UUID on first visit and stores it in localStorage
- * - Fetches the stored profile from the API on mount
- * - Exposes profile data for pre-populating questions in both chat and wizard
- */
+/* useUserProfile — manages the stable user identity and profile. */
 
 import { useState, useEffect, useCallback } from 'react';
 import { getUserProfile, upsertUserProfile, deleteUserProfile } from '../utils/api';

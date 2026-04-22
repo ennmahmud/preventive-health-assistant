@@ -1,8 +1,4 @@
-/**
- * RecommendationList
- * Renders health recommendations grouped by priority.
- * Accepts `recommendations` array from the /assess endpoints.
- */
+/* RecommendationList */
 
 import styles from './RecommendationList.module.css';
 

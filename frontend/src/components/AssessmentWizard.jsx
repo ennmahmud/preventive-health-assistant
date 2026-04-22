@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import useAssessment from '../hooks/useAssessment';
 import ConditionSelector from './ConditionSelector';
 import StepProgressBar from './StepProgressBar';
@@ -5,15 +6,30 @@ import AssessmentStep from './AssessmentStep';
 import AssessmentResults from './AssessmentResults';
 import styles from './AssessmentWizard.module.css';
 
-export default function AssessmentWizard({ userId, profile, isReturningUser, onSwitchToChat }) {
+export default function AssessmentWizard({
+  userId, profile, isReturningUser,
+  onSwitchToChat, onResultReady,
+}) {
   const {
     step, condition, questions, answers, result,
     isLoading, error,
-    selectCondition, updateAnswers, nextStep, prevStep, submit, reset,
+    selectCondition, updateAnswers, nextStep, prevStep, submit, reset, loadDemo,
   } = useAssessment(userId, profile);
 
   const totalSteps = questions.steps?.length || 3;
   const isResultStep = step > totalSteps;
+
+  // Notify App when a real result is ready (not a demo — demos have no lifestyle_answers)
+  useEffect(() => {
+    if (isResultStep && result && onResultReady) {
+      onResultReady(condition, result, answers);
+    }
+  }, [isResultStep, result]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // "Continue in Chat" — switch tab AND the result is already shared via onResultReady
+  const handleContinueChat = () => {
+    onSwitchToChat();
+  };
 
   // Step 0 — condition selection
   if (step === 0) {
@@ -30,7 +46,7 @@ export default function AssessmentWizard({ userId, profile, isReturningUser, onS
             </div>
           )}
         </div>
-        <ConditionSelector onSelect={selectCondition} isLoading={isLoading} />
+        <ConditionSelector onSelect={selectCondition} onDemo={loadDemo} isLoading={isLoading} />
         {error && <div className={styles.error}>{error}</div>}
       </div>
     );
@@ -43,18 +59,18 @@ export default function AssessmentWizard({ userId, profile, isReturningUser, onS
         <AssessmentResults
           result={result}
           condition={condition}
+          answers={answers}
           onStartNew={reset}
-          onContinueChat={onSwitchToChat}
+          onContinueChat={handleContinueChat}
         />
       </div>
     );
   }
 
   // Question steps 1–N
-  const stepIndex = step - 1; // 0-indexed into questions.steps
+  const stepIndex = step - 1;
   const currentStepQuestions = questions.steps?.[stepIndex] || [];
   const isLastStep = step === totalSteps;
-
   const stepLabels = ['Demographics', 'Lifestyle', 'Health History'];
 
   return (

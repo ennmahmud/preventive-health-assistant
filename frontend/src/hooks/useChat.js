@@ -1,38 +1,34 @@
-/**
- * useChat — hook for the multi-turn chatbot conversation.
- *
- * Manages:
- *  - messages[]      full conversation history (for display)
- *  - sessionId       persisted across turns
- *  - lastResult      last completed risk assessment result
- *  - isLoading       true while waiting for a reply
- *  - error           last error string (null if none)
- *
- * Usage:
- *   const { messages, send, reset, isLoading, error, lastResult } = useChat();
- */
+/* useChat — hook for the multi-turn chatbot conversation. */
 
 import { useState, useCallback } from 'react';
 import { sendChatMessage, deleteSession } from '../utils/api';
 
-export default function useChat(userId = null) {
+export default function useChat(userId = null, assessmentContext = null) {
   const [messages, setMessages] = useState([]);
   const [sessionId, setSessionId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [lastResult, setLastResult] = useState(null);
+  // Track which context has already been sent so we only inject it once
+  const [sentContextAt, setSentContextAt] = useState(null);
 
   const send = useCallback(async (text) => {
     if (!text.trim()) return;
 
-    // Optimistically add user message
     const userMsg = { role: 'user', content: text, id: Date.now() };
     setMessages((prev) => [...prev, userMsg]);
     setIsLoading(true);
     setError(null);
 
+    // Send assessment context on the first message after it becomes available
+    const contextToSend =
+      assessmentContext && assessmentContext.completedAt !== sentContextAt
+        ? assessmentContext
+        : null;
+    if (contextToSend) setSentContextAt(assessmentContext.completedAt);
+
     try {
-      const data = await sendChatMessage(text, sessionId, userId);
+      const data = await sendChatMessage(text, sessionId, userId, contextToSend);
       setSessionId(data.session_id);
 
       const botMsg = {

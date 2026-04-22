@@ -164,3 +164,83 @@
   color: var(--color-text-muted);
   margin-top: 8px;
 }
+
+/* Assessment context banner (between header and messages) */
+.contextBanner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
+  border-bottom: 2px solid;
+  flex-shrink: 0;
+  font-size: 0.82rem;
+}
+
+.contextLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.contextLabel {
+  color: var(--color-text-muted);
+}
+
+.contextCondition {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.contextRisk {
+  font-weight: 700;
+}
+
+.contextClear {
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  padding: 2px 6px;
+  cursor: pointer;
+  border-radius: 4px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+.contextClear:hover { color: var(--color-text); }
+
+/* Context card on welcome screen */
+.contextCard {
+  border: 2px solid;
+  border-radius: 12px;
+  padding: 16px 20px;
+  max-width: 380px;
+  text-align: left;
+  background: color-mix(in srgb, var(--color-surface-2) 60%, transparent);
+}
+
+.contextCardTitle {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin-bottom: 4px;
+}
+
+.contextCardRisk {
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.contextCardHint {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+@media (max-width: 480px) {
+  .contextBanner { padding: 8px 12px; font-size: 0.78rem; }
+  .contextCard { padding: 12px 14px; }
+}

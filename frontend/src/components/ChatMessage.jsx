@@ -1,8 +1,4 @@
-/**
- * ChatMessage
- * Renders a single conversation turn (user or assistant).
- * Assistant messages support Markdown via react-markdown.
- */
+/* ChatMessage */
 
 import ReactMarkdown from 'react-markdown';
 import styles from './ChatMessage.module.css';
