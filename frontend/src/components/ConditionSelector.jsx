@@ -24,27 +24,41 @@ const CONDITIONS = [
   },
 ];
 
-export default function ConditionSelector({ onSelect, isLoading }) {
+export default function ConditionSelector({ onSelect, onDemo, isLoading }) {
   return (
-    <div className={styles.grid}>
-      {CONDITIONS.map((c) => (
-        <button
-          key={c.id}
-          className={styles.card}
-          onClick={() => onSelect(c.id)}
-          disabled={isLoading}
-        >
-          <div className={styles.emoji}>{c.emoji}</div>
-          <div className={styles.label}>{c.label}</div>
-          <div className={styles.desc}>{c.desc}</div>
-          <ul className={styles.factors}>
-            {c.factors.map((f) => (
-              <li key={f}>{f}</li>
-            ))}
-          </ul>
-          <div className={styles.cta}>Start Assessment →</div>
-        </button>
-      ))}
+    <div className={styles.wrapper}>
+      <div className={styles.grid}>
+        {CONDITIONS.map((c) => (
+          <div key={c.id} className={styles.cardWrapper}>
+            <button
+              className={styles.card}
+              onClick={() => onSelect(c.id)}
+              disabled={isLoading}
+            >
+              <div className={styles.emoji}>{c.emoji}</div>
+              <div className={styles.label}>{c.label}</div>
+              <div className={styles.desc}>{c.desc}</div>
+              <ul className={styles.factors}>
+                {c.factors.map((f) => (
+                  <li key={f}>{f}</li>
+                ))}
+              </ul>
+              <div className={styles.cta}>Start Assessment →</div>
+            </button>
+            <button
+              className={styles.demoBtn}
+              onClick={() => onDemo(c.id)}
+              disabled={isLoading}
+              title="See how a high-risk result looks with full explainability"
+            >
+              🔴 Preview High-Risk Result
+            </button>
+          </div>
+        ))}
+      </div>
+      <p className={styles.demoNote}>
+        🔴 Preview buttons show a simulated high-risk result so you can explore the risk explanation and recommendations without completing the questionnaire.
+      </p>
     </div>
   );
 }

@@ -1,7 +1,4 @@
-/**
- * ChatInput
- * Text field + send button. Submits on Enter (Shift+Enter for newline).
- */
+/* ChatInput */
 
 import { useState, useRef, useEffect } from 'react';
 import styles from './ChatInput.module.css';

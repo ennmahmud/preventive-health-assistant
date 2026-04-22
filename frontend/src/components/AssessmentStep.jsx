@@ -111,17 +111,19 @@ function ScaleInput({ value, onChange }) {
   const labels = ['Very calm', 'Calm', 'Moderate', 'Stressed', 'Very stressed'];
   return (
     <div className={styles.scale}>
-      {[1, 2, 3, 4, 5].map((n) => (
-        <button
-          key={n}
-          type="button"
-          className={`${styles.scaleDot} ${value === n ? styles.scaleSelected : ''}`}
-          onClick={() => onChange(n)}
-          title={labels[n - 1]}
-        >
-          {n}
-        </button>
-      ))}
+      <div className={styles.scaleDots}>
+        {[1, 2, 3, 4, 5].map((n) => (
+          <button
+            key={n}
+            type="button"
+            className={`${styles.scaleDot} ${value === n ? styles.scaleSelected : ''}`}
+            onClick={() => onChange(n)}
+            title={labels[n - 1]}
+          >
+            {n}
+          </button>
+        ))}
+      </div>
       <div className={styles.scaleLabels}>
         <span>😌 Calm</span>
         <span>😰 Stressed</span>

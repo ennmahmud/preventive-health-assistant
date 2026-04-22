@@ -1,8 +1,9 @@
 import styles from './TabBar.module.css';
 
 const TABS = [
-  { id: 'chat', label: '💬 Chat', desc: 'Conversational' },
-  { id: 'assessment', label: '📋 Assessment', desc: 'Step-by-step' },
+  { id: 'chat',       label: '💬 Chat',       desc: 'Conversational' },
+  { id: 'assessment', label: '📋 Assessment',  desc: 'Step-by-step' },
+  { id: 'progress',  label: '📈 Progress',    desc: 'My trend' },
 ];
 
 export default function TabBar({ activeTab, onTabChange }) {

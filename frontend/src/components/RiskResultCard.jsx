@@ -1,8 +1,4 @@
-/**
- * RiskResultCard
- * Compact visual summary of a completed risk assessment.
- * Shown inline in the chat after a prediction completes.
- */
+/* RiskResultCard */
 
 import styles from './RiskResultCard.module.css';
 

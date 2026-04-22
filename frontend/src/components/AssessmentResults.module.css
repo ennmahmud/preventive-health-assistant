@@ -1,110 +1,139 @@
 .results {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 20px 24px;
+  gap: 18px;
+  padding: 24px;
   overflow-y: auto;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
 }
 
+/* Prevent flex-shrink from crushing cards inside the scrollable container */
+.results > * { flex-shrink: 0; }
+
 .riskCard {
-  border: 2px solid;
-  border-radius: 12px;
-  padding: 16px;
-  background: var(--bg-secondary);
+  border: 1px solid;
+  border-radius: 14px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle gradient shimmer using the risk colour */
+.riskCard::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, currentColor 0%, transparent 60%);
+  opacity: 0.05;
+  pointer-events: none;
 }
 
 .riskHeader {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: 14px;
+  margin-bottom: 14px;
 }
 
-.emoji { font-size: 2rem; }
+.emoji { font-size: 2.2rem; flex-shrink: 0; }
 
-.conditionName { font-size: 0.8rem; color: var(--text-muted); }
+.conditionName { font-size: 0.78rem; color: var(--color-text-muted); margin-bottom: 2px; }
 
-.riskCategory { font-size: 1.1rem; font-weight: 700; }
+.riskCategory { font-size: 1.15rem; font-weight: 800; }
 
 .riskPct {
   margin-left: auto;
-  font-size: 2rem;
-  font-weight: 800;
+  font-size: 2.2rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
 }
 
 .barTrack {
   height: 8px;
-  background: var(--border);
+  background: rgba(255,255,255,0.08);
   border-radius: 999px;
   overflow: hidden;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .barFill {
   height: 100%;
   border-radius: 999px;
-  transition: width 0.6s ease;
+  transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .narrative {
   font-size: 0.88rem;
-  color: var(--text-primary);
-  line-height: 1.5;
-  margin: 0 0 10px;
-  padding: 10px 12px;
-  background: rgba(255,255,255,0.04);
+  color: var(--color-text);
+  line-height: 1.6;
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.05);
   border-radius: 8px;
+  border-left: 3px solid currentColor;
 }
 
 .disclaimer {
   font-size: 0.72rem;
-  color: var(--text-muted);
+  color: var(--color-text-muted);
   font-style: italic;
   margin: 0;
 }
 
-.section { display: flex; flex-direction: column; gap: 10px; }
+.section { display: flex; flex-direction: column; gap: 12px; }
 
 .sectionTitle {
-  font-size: 0.9rem;
+  font-size: 0.92rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--color-text);
   margin: 0;
 }
 
-.factors { display: flex; flex-direction: column; gap: 8px; }
+.factors { display: flex; flex-direction: column; gap: 9px; }
 
 .factorRow {
   display: grid;
-  grid-template-columns: 1fr 120px 70px;
+  grid-template-columns: 1fr 100px 70px;
   align-items: center;
   gap: 8px;
-  font-size: 0.8rem;
+  font-size: 0.82rem;
 }
 
-.factorName { color: var(--text-primary); }
+@media (max-width: 480px) {
+  .factorRow {
+    grid-template-columns: 1fr 60px 60px;
+    gap: 6px;
+    font-size: 0.75rem;
+  }
+  .riskPct { font-size: 1.6rem; }
+  .actions { flex-wrap: wrap; }
+  .chatBtn { order: -1; width: 100%; }
+}
+
+.factorName { color: var(--color-text); }
 
 .factorBar {
   height: 6px;
-  background: var(--border);
+  background: rgba(255,255,255,0.08);
   border-radius: 999px;
   overflow: hidden;
 }
 
 .factorFill { height: 100%; border-radius: 999px; }
 
-.factorTag { font-size: 0.7rem; color: var(--text-muted); }
+.factorTag { font-size: 0.72rem; color: var(--color-text-muted); }
 
-.recs { display: flex; flex-direction: column; gap: 8px; }
+.recs { display: flex; flex-direction: column; gap: 9px; }
 
 .rec {
   display: flex;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: 8px;
-  background: var(--bg-secondary);
-  border-left: 3px solid var(--border);
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--color-surface);
+  border-left: 3px solid var(--color-border);
+  transition: border-left-color 0.15s;
 }
 
 .rec.high { border-left-color: #ef4444; }
@@ -114,18 +143,19 @@
 .recPriority { font-size: 1rem; flex-shrink: 0; padding-top: 1px; }
 
 .recText strong {
-  font-size: 0.78rem;
-  text-transform: capitalize;
-  color: var(--text-muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
   display: block;
-  margin-bottom: 2px;
+  margin-bottom: 3px;
 }
 
 .recText p {
   margin: 0;
-  font-size: 0.84rem;
-  color: var(--text-primary);
-  line-height: 1.4;
+  font-size: 0.85rem;
+  color: var(--color-text);
+  line-height: 1.45;
 }
 
 .actions {
@@ -138,20 +168,20 @@
 .newBtn {
   padding: 10px 16px;
   background: transparent;
-  border: 1px solid var(--border);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
-  color: var(--text-muted);
+  color: var(--color-text-muted);
   cursor: pointer;
   font-size: 0.87rem;
   transition: all 0.15s;
 }
 
-.newBtn:hover { color: var(--text-primary); border-color: var(--text-muted); }
+.newBtn:hover { color: var(--color-text); border-color: var(--color-text-muted); }
 
 .chatBtn {
   flex: 1;
   padding: 10px 16px;
-  background: var(--accent);
+  background: var(--color-accent);
   color: white;
   border: none;
   border-radius: 8px;
@@ -163,15 +193,29 @@
 
 .chatBtn:hover { opacity: 0.9; }
 
+.printBtn {
+  padding: 10px 14px;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: 0.87rem;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.printBtn:hover { color: var(--color-text); border-color: var(--color-text-muted); }
+
 .toggleBtn {
   background: transparent;
-  border: 1px solid var(--border);
+  border: 1px solid var(--color-border);
   border-radius: 6px;
-  color: var(--text-muted);
+  color: var(--color-text-muted);
   font-size: 0.78rem;
   padding: 6px 12px;
   cursor: pointer;
   align-self: flex-start;
   transition: all 0.15s;
 }
-.toggleBtn:hover { color: var(--text-primary); border-color: var(--text-muted); }
+.toggleBtn:hover { color: var(--color-text); border-color: var(--color-text-muted); }

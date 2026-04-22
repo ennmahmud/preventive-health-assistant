@@ -44,6 +44,9 @@ loguru>=0.7.0
 tqdm>=4.66.0
 joblib>=1.3.0
 
+# LLM Integration
+anthropic>=0.40.0
+
 # Profile Memory & RAG
 chromadb>=0.4.0
 sentence-transformers>=2.2.0

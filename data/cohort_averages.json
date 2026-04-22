@@ -1,0 +1,188 @@
+{
+  "diabetes": {
+    "18-35_female": {
+      "avg_risk": 0.0259,
+      "count": 1349,
+      "age_bucket": "18-35",
+      "gender": "female"
+    },
+    "18-35_male": {
+      "avg_risk": 0.0284,
+      "count": 1443,
+      "age_bucket": "18-35",
+      "gender": "male"
+    },
+    "36-45_female": {
+      "avg_risk": 0.1101,
+      "count": 636,
+      "age_bucket": "36-45",
+      "gender": "female"
+    },
+    "36-45_male": {
+      "avg_risk": 0.1076,
+      "count": 790,
+      "age_bucket": "36-45",
+      "gender": "male"
+    },
+    "46-55_female": {
+      "avg_risk": 0.2123,
+      "count": 664,
+      "age_bucket": "46-55",
+      "gender": "female"
+    },
+    "46-55_male": {
+      "avg_risk": 0.188,
+      "count": 803,
+      "age_bucket": "46-55",
+      "gender": "male"
+    },
+    "56-65_female": {
+      "avg_risk": 0.3406,
+      "count": 831,
+      "age_bucket": "56-65",
+      "gender": "female"
+    },
+    "56-65_male": {
+      "avg_risk": 0.2894,
+      "count": 812,
+      "age_bucket": "56-65",
+      "gender": "male"
+    },
+    "65+_female": {
+      "avg_risk": 0.3787,
+      "count": 1072,
+      "age_bucket": "65+",
+      "gender": "female"
+    },
+    "65+_male": {
+      "avg_risk": 0.3071,
+      "count": 1078,
+      "age_bucket": "65+",
+      "gender": "male"
+    }
+  },
+  "cvd": {
+    "18-35_female": {
+      "avg_risk": 0.0081,
+      "count": 1357,
+      "age_bucket": "18-35",
+      "gender": "female"
+    },
+    "18-35_male": {
+      "avg_risk": 0.0077,
+      "count": 1435,
+      "age_bucket": "18-35",
+      "gender": "male"
+    },
+    "36-45_female": {
+      "avg_risk": 0.0298,
+      "count": 638,
+      "age_bucket": "36-45",
+      "gender": "female"
+    },
+    "36-45_male": {
+      "avg_risk": 0.0341,
+      "count": 763,
+      "age_bucket": "36-45",
+      "gender": "male"
+    },
+    "46-55_female": {
+      "avg_risk": 0.0766,
+      "count": 679,
+      "age_bucket": "46-55",
+      "gender": "female"
+    },
+    "46-55_male": {
+      "avg_risk": 0.0744,
+      "count": 780,
+      "age_bucket": "46-55",
+      "gender": "male"
+    },
+    "56-65_female": {
+      "avg_risk": 0.1941,
+      "count": 809,
+      "age_bucket": "56-65",
+      "gender": "female"
+    },
+    "56-65_male": {
+      "avg_risk": 0.1145,
+      "count": 830,
+      "age_bucket": "56-65",
+      "gender": "male"
+    },
+    "65+_female": {
+      "avg_risk": 0.3446,
+      "count": 1094,
+      "age_bucket": "65+",
+      "gender": "female"
+    },
+    "65+_male": {
+      "avg_risk": 0.2333,
+      "count": 1093,
+      "age_bucket": "65+",
+      "gender": "male"
+    }
+  },
+  "hypertension": {
+    "18-35_female": {
+      "avg_risk": 0.0659,
+      "count": 1214,
+      "age_bucket": "18-35",
+      "gender": "female"
+    },
+    "18-35_male": {
+      "avg_risk": 0.0147,
+      "count": 1294,
+      "age_bucket": "18-35",
+      "gender": "male"
+    },
+    "36-45_female": {
+      "avg_risk": 0.184,
+      "count": 587,
+      "age_bucket": "36-45",
+      "gender": "female"
+    },
+    "36-45_male": {
+      "avg_risk": 0.0981,
+      "count": 683,
+      "age_bucket": "36-45",
+      "gender": "male"
+    },
+    "46-55_female": {
+      "avg_risk": 0.2508,
+      "count": 590,
+      "age_bucket": "46-55",
+      "gender": "female"
+    },
+    "46-55_male": {
+      "avg_risk": 0.2015,
+      "count": 660,
+      "age_bucket": "46-55",
+      "gender": "male"
+    },
+    "56-65_female": {
+      "avg_risk": 0.3532,
+      "count": 722,
+      "age_bucket": "56-65",
+      "gender": "female"
+    },
+    "56-65_male": {
+      "avg_risk": 0.3263,
+      "count": 714,
+      "age_bucket": "56-65",
+      "gender": "male"
+    },
+    "65+_female": {
+      "avg_risk": 0.3913,
+      "count": 897,
+      "age_bucket": "65+",
+      "gender": "female"
+    },
+    "65+_male": {
+      "avg_risk": 0.4858,
+      "count": 879,
+      "age_bucket": "65+",
+      "gender": "male"
+    }
+  }
+}

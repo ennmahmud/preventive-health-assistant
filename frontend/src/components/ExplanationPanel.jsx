@@ -1,8 +1,4 @@
-/**
- * ExplanationPanel
- * Renders SHAP-based risk factor contributions as a horizontal bar chart.
- * Accepts the `explanation` object returned by the /assess endpoints.
- */
+/* ExplanationPanel */
 
 import styles from './ExplanationPanel.module.css';
 

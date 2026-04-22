@@ -1,11 +1,11 @@
 /* Design tokens */
 :root {
-  --color-bg: #0f1117;
-  --color-surface: #1a1d27;
-  --color-surface-2: #22263a;
-  --color-border: #2e3350;
+  --color-bg: #0c0e17;
+  --color-surface: #13162b;
+  --color-surface-2: #1c2038;
+  --color-border: #2a2f50;
   --color-text: #e8eaf0;
-  --color-text-muted: #8892aa;
+  --color-text-muted: #7a86a1;
   --color-accent: #5b8dee;
   --color-accent-hover: #7aa5f5;
 
@@ -16,8 +16,16 @@
 
   --radius: 12px;
   --radius-sm: 6px;
-  --shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+  --shadow-glow: 0 0 0 3px rgba(91, 141, 238, 0.18);
 
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Aliases used by component CSS files */
+  --bg-secondary: var(--color-surface);
+  --border: var(--color-border);
+  --text-primary: var(--color-text);
+  --text-muted: var(--color-text-muted);
+  --accent: var(--color-accent);
 }

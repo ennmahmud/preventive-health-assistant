@@ -1,6 +1,4 @@
-/**
- * API client for the Preventive Health Assistant backend.
- */
+/* API client for the Preventive Health Assistant backend. */
 
 const BASE = '/api/v1';
 
@@ -14,17 +12,17 @@ async function handleResponse(res) {
 
 // ── Chat ─────────────────────────────────────────────────────────────────────
 
-/**
- * Send a chat message.
- * @param {string} message
- * @param {string|null} sessionId
- * @param {string|null} userId  — stable user UUID for profile memory
- */
-export async function sendChatMessage(message, sessionId = null, userId = null) {
+/* Send a chat message. */
+export async function sendChatMessage(message, sessionId = null, userId = null, assessmentContext = null) {
   const res = await fetch(`${BASE}/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message, session_id: sessionId, user_id: userId }),
+    body: JSON.stringify({
+      message,
+      session_id: sessionId,
+      user_id: userId,
+      assessment_context: assessmentContext ?? null,
+    }),
   });
   return handleResponse(res);
 }
@@ -55,17 +53,19 @@ export async function deleteUserProfile(userId) {
   return handleResponse(res);
 }
 
-export async function getAssessmentHistory(userId, limit = 10) {
+export async function getAssessmentHistory(userId, limit = 20) {
   const res = await fetch(`${BASE}/profile/${userId}/history?limit=${limit}`);
   return handleResponse(res);
 }
 
+export async function getAllConditionsTrend(userId) {
+  // Fetch last 20 assessments for trend charts
+  return getAssessmentHistory(userId, 20);
+}
+
 // ── Structured Assessment ─────────────────────────────────────────────────────
 
-/**
- * Run a structured lifestyle-based assessment.
- * @param {{ condition, answers, user_id, include_explanation, include_recommendations }} payload
- */
+/* Run a structured lifestyle-based assessment. */
 export async function runStructuredAssessment(payload) {
   const res = await fetch(`${BASE}/assessment`, {
     method: 'POST',
@@ -77,6 +77,31 @@ export async function runStructuredAssessment(payload) {
 
 export async function getAssessmentQuestions(condition) {
   const res = await fetch(`${BASE}/assessment/questions/${condition}`);
+  return handleResponse(res);
+}
+
+/* Run a what-if simulation. */
+export async function simulateWhatIf(condition, baselineAnswers, changes, userId = null) {
+  const res = await fetch(`${BASE}/assessment/simulate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      condition,
+      baseline_answers: baselineAnswers,
+      changes,
+      user_id: userId,
+    }),
+  });
+  return handleResponse(res);
+}
+
+// ── Cohort Comparison ─────────────────────────────────────────────────────────
+
+/* Fetch cohort average risk for a given condition, age, and gender. */
+export async function getCohortComparison(condition, age, gender, userRisk = null) {
+  let url = `${BASE}/assessment/cohort?condition=${condition}&age=${age}&gender=${gender}`;
+  if (userRisk !== null) url += `&user_risk=${userRisk}`;
+  const res = await fetch(url);
   return handleResponse(res);
 }
 
