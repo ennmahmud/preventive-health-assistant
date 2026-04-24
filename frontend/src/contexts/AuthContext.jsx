@@ -1,5 +1,12 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { login as apiLogin, register as apiRegister, logout as apiLogout } from '../api/auth';
+import { createContext, useContext, useState, useCallback } from 'react';
+import {
+  login as apiLogin,
+  register as apiRegister,
+  logout as apiLogout,
+  updateProfile as apiUpdateProfile,
+  changePassword as apiChangePassword,
+  deleteAccount as apiDeleteAccount,
+} from '../api/auth';
 
 const AuthContext = createContext(null);
 
@@ -11,14 +18,18 @@ export function AuthProvider({ children }) {
 
   const isAuthenticated = !!user && !!localStorage.getItem('elan_token');
 
+  const _persistUser = (u) => {
+    setUser(u);
+    localStorage.setItem('elan_user', JSON.stringify(u));
+  };
+
   const login = useCallback(async (email, password) => {
     setIsLoading(true);
     try {
       const data = await apiLogin(email, password);
       localStorage.setItem('elan_token', data.access_token);
       const u = data.user || { email };
-      localStorage.setItem('elan_user', JSON.stringify(u));
-      setUser(u);
+      _persistUser(u);
       return u;
     } finally {
       setIsLoading(false);
@@ -31,8 +42,7 @@ export function AuthProvider({ children }) {
       const data = await apiRegister(name, email, password);
       localStorage.setItem('elan_token', data.access_token);
       const u = data.user || { name, email };
-      localStorage.setItem('elan_user', JSON.stringify(u));
-      setUser(u);
+      _persistUser(u);
       return u;
     } finally {
       setIsLoading(false);
@@ -44,8 +54,43 @@ export function AuthProvider({ children }) {
     setUser(null);
   }, []);
 
+  /**
+   * Update profile fields (name, dob, gender, height, weight).
+   * Syncs with the backend and updates the in-memory + localStorage user.
+   */
+  const updateProfile = useCallback(async (fields) => {
+    const updatedUser = await apiUpdateProfile(fields);
+    _persistUser(updatedUser);
+    return updatedUser;
+  }, []);
+
+  /**
+   * Change password — throws if current password is wrong (HTTP 400).
+   */
+  const changePassword = useCallback(async (currentPassword, newPassword) => {
+    await apiChangePassword(currentPassword, newPassword);
+  }, []);
+
+  /**
+   * Permanently delete the account. Clears local auth state on success.
+   */
+  const deleteAccount = useCallback(async (password) => {
+    await apiDeleteAccount(password);
+    setUser(null);
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, isLoading, login, signup, logout }}>
+    <AuthContext.Provider value={{
+      user,
+      isAuthenticated,
+      isLoading,
+      login,
+      signup,
+      logout,
+      updateProfile,
+      changePassword,
+      deleteAccount,
+    }}>
       {children}
     </AuthContext.Provider>
   );

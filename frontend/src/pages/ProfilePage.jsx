@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Save, CheckCircle, Camera } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import styles from './ProfilePage.module.css';
 
 const GENDER_OPTIONS = [
@@ -48,15 +48,24 @@ export default function ProfilePage() {
     return errs;
   };
 
-  const handleSave = (e) => {
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = useCallback(async (e) => {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length) { setErrors(errs); return; }
     setErrors({});
-    updateProfile(form);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
-  };
+    setSaving(true);
+    try {
+      await updateProfile(form);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch (err) {
+      setErrors({ save: err?.response?.data?.detail || 'Failed to save. Please try again.' });
+    } finally {
+      setSaving(false);
+    }
+  }, [form, updateProfile]);
 
   const bmiInfo = bmiMeta(bmiVal);
 
@@ -135,9 +144,12 @@ export default function ProfilePage() {
           <button
             className={`${styles.saveBtn} ${saved ? styles.saveBtnDone : ''}`}
             type="submit"
+            disabled={saving}
           >
             {saved
               ? <><CheckCircle size={16} strokeWidth={2.5} /> Saved</>
+              : saving
+              ? 'Saving…'
               : <><Save size={16} strokeWidth={2} /> Save Changes</>}
           </button>
         </div>

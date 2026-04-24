@@ -17,6 +17,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from config.settings import API_CONFIG
 from src.api.routes.auth import router as auth_router
+from src.api.db.users_db import init_db
 from src.api.routes.health import router as health_router
 from src.api.routes.cvd import router as cvd_router
 from src.api.routes.hypertension import router as hypertension_router
@@ -47,6 +48,13 @@ async def lifespan(app: FastAPI):
     """
     # === STARTUP ===
     logger.info("Starting Preventive Health Assistant API...")
+
+    # Initialise SQLite user store (creates data/users.db if it doesn't exist)
+    try:
+        init_db()
+        logger.info("✓ User database initialised")
+    except Exception as e:
+        logger.error(f"✗ Failed to initialise user database: {e}")
 
     # Load the diabetes risk model
     try:
