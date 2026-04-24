@@ -1,0 +1,48 @@
+# Python
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+htmlcov/
+.coverage
+.pytest_cache/
+.mypy_cache/
+
+# Frontend build artefacts (built inside container)
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Large data — mounted as volumes in compose
+data/raw/
+data/users.db
+
+# Trained models — mounted as volumes in compose
+models/saved/*.joblib
+models/saved/*.pkl
+
+# Notebooks (not needed at runtime)
+notebooks/
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
+*.swp
+
+# Secrets
+.env
+.env.*
+
+# Git
+.git/
+.github/
+.gitignore
+
+# Misc
+*.zip
+my-marketplace/
+backend_schema.json
+preventive_health_assistant.egg-info/
