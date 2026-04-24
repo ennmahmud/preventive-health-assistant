@@ -13,4 +13,16 @@ export default defineConfig({
       },
     },
   },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: './src/__tests__/setup.js',
+    css: false,               // skip CSS processing — focus on behaviour
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+      include: ['src/**/*.{js,jsx}'],
+      exclude: ['src/__tests__/**', 'src/main.jsx'],
+    },
+  },
 })
