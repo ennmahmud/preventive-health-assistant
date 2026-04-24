@@ -55,6 +55,7 @@ class CVDRiskModel(BaseEstimator, ClassifierMixin):
         colsample_bytree: float = 0.8,
         random_state: int = 42,
         early_stopping_rounds: int = 20,
+        scale_pos_weight: Any = "auto",
         **kwargs,
     ):
         self.n_estimators = n_estimators
@@ -64,10 +65,12 @@ class CVDRiskModel(BaseEstimator, ClassifierMixin):
         self.colsample_bytree = colsample_bytree
         self.random_state = random_state
         self.early_stopping_rounds = early_stopping_rounds
+        self.scale_pos_weight = scale_pos_weight
         self.kwargs = kwargs
 
         self.model: Optional[xgb.XGBClassifier] = None
         self.feature_names: List[str] = []
+        self.threshold: float = 0.5
         self.metadata: Dict[str, Any] = {}
         self._is_fitted = False
 
@@ -111,6 +114,12 @@ class CVDRiskModel(BaseEstimator, ClassifierMixin):
 
         self.feature_names = list(X.columns)
 
+        spw = self.scale_pos_weight
+        if spw == "auto":
+            neg, pos = (y == 0).sum(), (y == 1).sum()
+            spw = float(neg / pos) if pos > 0 else 1.0
+            logger.info(f"Auto scale_pos_weight = {spw:.2f} ({neg} neg / {pos} pos)")
+
         self.model = xgb.XGBClassifier(
             n_estimators=self.n_estimators,
             max_depth=self.max_depth,
@@ -118,7 +127,8 @@ class CVDRiskModel(BaseEstimator, ClassifierMixin):
             subsample=self.subsample,
             colsample_bytree=self.colsample_bytree,
             random_state=self.random_state,
-            eval_metric="auc",
+            scale_pos_weight=spw,
+            eval_metric="aucpr",
             early_stopping_rounds=self.early_stopping_rounds if eval_set else None,
             verbosity=1 if verbose else 0,
             **self.kwargs,
@@ -129,6 +139,11 @@ class CVDRiskModel(BaseEstimator, ClassifierMixin):
         else:
             self.model.fit(X, y)
 
+        # Threshold is set to conservative default here; call find_optimal_threshold()
+        # after training with the held-out test set for a proper recall-optimised value.
+        self.threshold = 0.3
+        logger.info(f"Default threshold set to {self.threshold:.2f} — call find_optimal_threshold() to tune")
+
         self.metadata = {
             "trained_at": datetime.now().isoformat(),
             "n_samples": len(X),
@@ -137,6 +152,8 @@ class CVDRiskModel(BaseEstimator, ClassifierMixin):
             "params": self.get_params(),
             "best_iteration": getattr(self.model, "best_iteration", self.n_estimators),
             "model_type": "CVD Risk Model",
+            "scale_pos_weight": spw,
+            "threshold": self.threshold,
         }
 
         self._is_fitted = True
@@ -145,10 +162,62 @@ class CVDRiskModel(BaseEstimator, ClassifierMixin):
         )
         return self
 
-    def predict(self, X: pd.DataFrame) -> np.ndarray:
-        """Return binary CVD predictions (0 or 1)."""
+    def find_optimal_threshold(
+        self,
+        X_val: pd.DataFrame,
+        y_val,
+        beta: float = 2.0,
+        min_recall: float = 0.60,
+    ) -> float:
+        """
+        Find the decision threshold that maximises F-beta on a held-out validation set.
+
+        beta=2 weights recall twice as heavily as precision — appropriate for a
+        cardiovascular screening tool where missing a real CVD case (false negative)
+        is more harmful than a false alarm (false positive).
+
+        Args:
+            X_val:      Held-out validation features (use test set, not train).
+            y_val:      True labels for the validation set.
+            beta:       F-beta parameter (2.0 → recall weighted 4× over precision).
+            min_recall: Skip thresholds that drop recall below this floor.
+
+        Returns:
+            The chosen threshold (also stored in self.threshold).
+        """
+        from sklearn.metrics import precision_recall_curve
+
         self._check_is_fitted()
-        return self.model.predict(X)
+        proba = self.predict_proba(X_val)[:, 1]
+        precisions, recalls, thresholds = precision_recall_curve(y_val, proba)
+
+        best_threshold = self.threshold
+        best_fbeta = -1.0
+
+        for i, t in enumerate(thresholds):
+            r = recalls[i]
+            p = precisions[i]
+            if r < min_recall:
+                continue
+            denom = beta ** 2 * p + r
+            fbeta = (1 + beta ** 2) * p * r / denom if denom > 0 else 0.0
+            if fbeta > best_fbeta:
+                best_fbeta = fbeta
+                best_threshold = float(t)
+
+        self.threshold = best_threshold
+        logger.info(
+            f"CVD optimal threshold: {self.threshold:.3f} "
+            f"(F{beta:.0f}={best_fbeta:.4f}, min_recall={min_recall:.0%})"
+        )
+        return best_threshold
+
+    def predict(self, X: pd.DataFrame, threshold: Optional[float] = None) -> np.ndarray:
+        """Return binary CVD predictions (0 or 1) using the stored optimal threshold."""
+        self._check_is_fitted()
+        t = threshold if threshold is not None else self.threshold
+        proba = self.model.predict_proba(X)[:, 1]
+        return (proba >= t).astype(int)
 
     def predict_proba(self, X: pd.DataFrame) -> np.ndarray:
         """Return probability estimates [P(no CVD), P(CVD)]."""
@@ -268,6 +337,7 @@ class CVDRiskModel(BaseEstimator, ClassifierMixin):
         save_data = {
             "model": self.model,
             "feature_names": self.feature_names,
+            "threshold": self.threshold,
             "metadata": self.metadata,
             "params": self.get_params(),
         }
@@ -297,6 +367,7 @@ class CVDRiskModel(BaseEstimator, ClassifierMixin):
         instance = cls(**save_data["params"])
         instance.model = save_data["model"]
         instance.feature_names = save_data["feature_names"]
+        instance.threshold = save_data.get("threshold", 0.5)
         instance.metadata = save_data["metadata"]
         instance._is_fitted = True
         return instance
@@ -316,6 +387,7 @@ class CVDRiskModel(BaseEstimator, ClassifierMixin):
             "colsample_bytree": self.colsample_bytree,
             "random_state": self.random_state,
             "early_stopping_rounds": self.early_stopping_rounds,
+            "scale_pos_weight": self.scale_pos_weight,
             **self.kwargs,
         }
 

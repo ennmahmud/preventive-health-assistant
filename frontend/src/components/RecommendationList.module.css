@@ -1,26 +1,30 @@
+/* Apple-style recommendation list */
 .container {
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  padding: 16px 20px;
+  border: 1px solid var(--color-separator);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  box-shadow: var(--shadow-xs);
 }
 
 .title {
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: 0.88rem;
+  font-weight: 700;
   color: var(--color-text);
+  letter-spacing: -0.01em;
   margin-bottom: 14px;
 }
 
-.group { margin-bottom: 16px; }
+.group { margin-bottom: 14px; }
 .group:last-child { margin-bottom: 0; }
 
 .groupLabel {
-  font-size: 0.78rem;
+  font-size: 0.66rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-bottom: 8px;
+  letter-spacing: 0.07em;
+  color: var(--color-text-muted);
+  margin-bottom: 6px;
 }
 
 .item {
@@ -29,34 +33,31 @@
   padding: 10px 12px;
   background: var(--color-surface-2);
   border-radius: var(--radius-sm);
-  margin-bottom: 6px;
+  margin-bottom: 5px;
 }
-
 .item:last-child { margin-bottom: 0; }
 
-.itemIcon {
-  font-size: 1.1rem;
-  flex-shrink: 0;
-  margin-top: 1px;
-}
+.itemIcon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
 
 .itemBody { flex: 1; }
 
 .itemText {
-  font-size: 0.88rem;
+  font-size: 0.84rem;
   color: var(--color-text);
   line-height: 1.5;
+  font-weight: 500;
 }
 
 .itemRationale {
-  font-size: 0.8rem;
+  font-size: 0.77rem;
   color: var(--color-text-muted);
-  margin-top: 3px;
-  line-height: 1.4;
+  margin-top: 2px;
+  line-height: 1.45;
 }
 
 .itemSource {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   color: var(--color-accent);
-  margin-top: 4px;
+  margin-top: 3px;
+  font-weight: 500;
 }

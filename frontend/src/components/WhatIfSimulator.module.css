@@ -1,211 +1,78 @@
-.container {
+/* What-If Simulator */
+.root {
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  padding: 20px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 16px;
-}
-
-.header { display: flex; flex-direction: column; gap: 4px; }
-
-.title {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--color-text);
-  margin: 0;
-}
-
-.subtitle {
-  font-size: 0.82rem;
-  color: var(--color-text-muted);
-  margin: 0;
-}
-
-/* Risk comparison */
-.comparison {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  gap: 14px;
   padding: 16px;
-  background: var(--color-surface-2);
-  border-radius: 12px;
 }
 
-.comparisonItem {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-
-.compLabel { font-size: 0.75rem; color: var(--color-text-muted); }
-
-.compValue { font-size: 1.8rem; font-weight: 800; line-height: 1; }
-
-.compCat { font-size: 0.78rem; font-weight: 600; }
-
-.compPlaceholder { font-size: 1.8rem; color: var(--color-text-muted); }
-
-.arrow { text-align: center; min-width: 60px; }
-
-.arrowGood { font-size: 1.4rem; font-weight: 800; color: #16a34a; }
-.arrowBad  { font-size: 1.4rem; font-weight: 800; color: #dc2626; }
-.arrowNeutral { font-size: 1.4rem; color: var(--color-text-muted); }
-
-/* Progress bars */
-.bars { display: flex; flex-direction: column; gap: 6px; }
-
-.barRow { display: flex; align-items: center; gap: 10px; }
-
-.barLabel { font-size: 0.75rem; color: var(--color-text-muted); width: 36px; flex-shrink: 0; }
-
-.barTrack {
-  flex: 1;
-  height: 10px;
-  background: var(--color-surface-2);
-  border-radius: 999px;
-  overflow: hidden;
-}
-
-.barFill {
-  height: 100%;
-  border-radius: 999px;
-  transition: width 0.5s ease;
-}
-
-/* Levers */
-.levers { display: flex; flex-direction: column; gap: 14px; }
-
-.lever {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.leverHeader {
+.header {
   display: flex;
   align-items: center;
-  gap: 8px;
-}
-
-.leverLabel {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--color-text);
-}
-
-.changedBadge {
-  font-size: 0.68rem;
-  background: color-mix(in srgb, var(--color-accent) 15%, transparent);
-  color: var(--color-accent);
-  border: 1px solid color-mix(in srgb, var(--color-accent) 30%, transparent);
-  padding: 1px 7px;
-  border-radius: 999px;
-}
-
-/* Choice buttons */
-.choiceGroup {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.choiceBtn {
-  padding: 5px 12px;
-  border-radius: 999px;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface-2);
-  color: var(--color-text-muted);
-  font-size: 0.78rem;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.choiceBtn:hover { border-color: var(--color-accent); color: var(--color-accent); }
-
-.choiceActive {
-  background: color-mix(in srgb, var(--color-accent) 15%, transparent);
-  border-color: var(--color-accent);
-  color: var(--color-accent);
-  font-weight: 600;
-}
-
-/* Slider */
-.sliderRow { display: flex; align-items: center; gap: 10px; }
-
-.slider { flex: 1; accent-color: var(--color-accent); cursor: pointer; }
-
-.sliderVal {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--color-text);
-  min-width: 50px;
-  text-align: right;
-}
-
-/* Actions */
-.actions {
-  display: flex;
   gap: 10px;
-  justify-content: flex-end;
+  margin-bottom: 4px;
 }
 
-.resetBtn {
-  padding: 8px 16px;
-  border-radius: 8px;
-  border: 1px solid var(--color-border);
-  background: transparent;
-  color: var(--color-text-muted);
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.resetBtn:hover:not(:disabled) { border-color: var(--color-text-muted); color: var(--color-text); }
-.resetBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+.title { font-size: 0.88rem; font-weight: 700; color: var(--color-text); }
+.subtitle { font-size: 0.75rem; color: var(--color-text-muted); }
 
-.simulateBtn {
-  padding: 8px 20px;
-  border-radius: 8px;
-  border: none;
-  background: var(--color-accent);
-  color: #fff;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: opacity 0.15s;
-}
-.simulateBtn:hover:not(:disabled) { opacity: 0.88; }
-.simulateBtn:disabled { opacity: 0.45; cursor: not-allowed; }
+.sliders { display: flex; flex-direction: column; gap: 12px; }
 
-/* Summary */
-.summary {
-  font-size: 0.85rem;
+.sliderRow { display: flex; flex-direction: column; gap: 5px; }
+
+.sliderLabel {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
   font-weight: 500;
-  padding: 10px 14px;
-  border-radius: 8px;
-  text-align: center;
+  color: var(--color-text);
 }
 
-.summaryGood {
-  background: color-mix(in srgb, #16a34a 12%, transparent);
-  color: #16a34a;
-  border: 1px solid color-mix(in srgb, #16a34a 30%, transparent);
+.sliderValue {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--color-accent);
 }
 
-.summaryBad {
-  background: color-mix(in srgb, #dc2626 10%, transparent);
-  color: #dc2626;
-  border: 1px solid color-mix(in srgb, #dc2626 25%, transparent);
+input[type="range"] {
+  width: 100%;
+  height: 4px;
+  border-radius: var(--radius-pill);
+  accent-color: var(--color-accent);
 }
 
-.error { font-size: 0.82rem; color: #ef4444; text-align: center; }
-
-@media (max-width: 480px) {
-  .comparison { gap: 8px; padding: 12px; }
-  .compValue { font-size: 1.4rem; }
-  .choiceGroup { gap: 5px; }
-  .choiceBtn { font-size: 0.72rem; padding: 4px 9px; }
+/* Result delta */
+.delta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-separator);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
 }
+
+.deltaLabel { font-size: 0.8rem; color: var(--color-text-muted); }
+
+.deltaValue {
+  font-size: 1.4rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.arrowGood { color: var(--apple-green); }
+.arrowBad  { color: var(--apple-red); }
+
+.improved {
+  background: rgba(52,199,89,0.06);
+  border-color: rgba(52,199,89,0.20);
+}
+
+.worsened {
+  background: rgba(255,59,48,0.06);
+  border-color: rgba(255,59,48,0.16);
+}
+
+.error { font-size: 0.8rem; color: var(--apple-red); text-align: center; }

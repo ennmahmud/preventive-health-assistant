@@ -42,7 +42,15 @@ class HypertensionMetricsInput(BaseModel):
         None, ge=40, le=200, description="Waist circumference in cm"
     )
 
-    # Lab results (optional — no BP)
+    # Blood pressure (optional — significantly improves accuracy when known)
+    systolic_bp: Optional[float] = Field(
+        None, ge=60, le=260, description="Systolic blood pressure (mmHg)"
+    )
+    diastolic_bp: Optional[float] = Field(
+        None, ge=30, le=160, description="Diastolic blood pressure (mmHg)"
+    )
+
+    # Lab results (optional)
     hba1c: Optional[float] = Field(None, ge=3.0, le=20.0, description="HbA1c percentage")
     fasting_glucose: Optional[float] = Field(
         None, ge=20, le=600, description="Fasting glucose (mg/dL)"
@@ -85,13 +93,13 @@ class HypertensionMetricsInput(BaseModel):
         return None
 
     class Config:
-        # Reject unknown fields (e.g. systolic_bp) — BP is intentionally excluded from this schema
-        extra = "forbid"
         json_schema_extra = {
             "example": {
                 "age": 48,
                 "gender": "male",
                 "bmi": 31.2,
+                "systolic_bp": 138,
+                "diastolic_bp": 88,
                 "smoking_status": "never",
                 "sedentary_minutes": 600,
                 "diabetes": False,

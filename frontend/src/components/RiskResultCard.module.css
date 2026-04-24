@@ -1,11 +1,12 @@
+/* Apple Health ring-inspired risk card */
 .card {
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-left: 3px solid var(--risk-color, var(--color-accent));
-  border-radius: var(--radius);
-  padding: 14px 16px;
-  max-width: 420px;
-  animation: fadeUp 0.25s ease;
+  border: 1px solid var(--color-separator);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  max-width: 400px;
+  box-shadow: var(--shadow);
+  animation: fadeUp var(--t-base) var(--ease-out);
 }
 
 @keyframes fadeUp {
@@ -16,54 +17,61 @@
 .header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 
-.emoji { font-size: 1.5rem; flex-shrink: 0; }
+.emojiWrap {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--color-surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
 
 .conditionLabel {
-  font-size: 0.78rem;
-  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
+  color: var(--color-text-muted);
 }
 
 .categoryLabel {
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--risk-color, var(--color-text));
+  letter-spacing: -0.01em;
 }
 
 .pct {
   margin-left: auto;
-  font-size: 1.6rem;
-  font-weight: 700;
+  font-size: 1.75rem;
+  font-weight: 800;
   color: var(--risk-color, var(--color-text));
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
 }
 
-/* Bar */
+/* Thin progress bar */
 .barTrack {
-  height: 6px;
-  background: var(--color-surface-2);
-  border-radius: 3px;
+  height: 5px;
+  background: var(--apple-gray-5);
+  border-radius: var(--radius-pill);
   overflow: hidden;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .barFill {
   height: 100%;
   background: var(--risk-color, var(--color-accent));
-  border-radius: 3px;
-  transition: width 0.6s ease;
+  border-radius: var(--radius-pill);
+  transition: width 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.hint {
-  font-size: 0.78rem;
-  color: var(--color-text-muted);
-}
-.hint em {
-  font-style: normal;
-  color: var(--color-accent);
-}
+.hint { font-size: 0.75rem; color: var(--color-text-muted); line-height: 1.5; }
+.hint em { font-style: normal; color: var(--color-accent); font-weight: 500; }

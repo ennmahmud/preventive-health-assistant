@@ -1,39 +1,38 @@
+/* SHAP factor chart — Apple card style */
 .panel {
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
+  border: 1px solid var(--color-separator);
+  border-radius: var(--radius-lg);
   padding: 16px 20px;
+  box-shadow: var(--shadow-xs);
 }
 
 .title {
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: 0.9rem;
+  font-weight: 700;
   color: var(--color-text);
-  margin-bottom: 6px;
+  letter-spacing: -0.01em;
+  margin-bottom: 4px;
 }
 
 .summary {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: var(--color-text-muted);
   margin-bottom: 14px;
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
-.chart {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
+.chart { display: flex; flex-direction: column; gap: 7px; }
 
 .row {
   display: grid;
-  grid-template-columns: 160px 1fr 80px;
+  grid-template-columns: 150px 1fr 72px;
   align-items: center;
   gap: 10px;
 }
 
 .featureName {
-  font-size: 0.82rem;
+  font-size: 0.79rem;
   color: var(--color-text-muted);
   white-space: nowrap;
   overflow: hidden;
@@ -41,34 +40,30 @@
 }
 
 .barWrap {
-  height: 8px;
-  background: var(--color-surface-2);
-  border-radius: 4px;
+  height: 6px;
+  background: var(--apple-gray-5);
+  border-radius: var(--radius-pill);
   overflow: hidden;
 }
 
 .bar {
   height: 100%;
-  border-radius: 4px;
-  transition: width 0.5s ease;
+  border-radius: var(--radius-pill);
+  transition: width 0.5s var(--ease-out);
 }
 
-.riskBar    { background: var(--color-high); }
-.protectBar { background: var(--color-low); }
+.riskBar    { background: var(--apple-red); }
+.protectBar { background: var(--apple-green); }
 
 .value {
-  font-size: 0.8rem;
+  font-size: 0.76rem;
   font-variant-numeric: tabular-nums;
   text-align: right;
+  font-weight: 500;
 }
 
-.riskText    { color: var(--color-high); }
-.protectText { color: var(--color-low); }
+.riskText    { color: var(--apple-red); }
+.protectText { color: var(--apple-green); }
 
-.baseRisk {
-  margin-top: 12px;
-  font-size: 0.8rem;
-  color: var(--color-text-muted);
-}
-
-.baseRisk strong { color: var(--color-text); }
+.baseRisk { margin-top: 12px; font-size: 0.76rem; color: var(--color-text-muted); }
+.baseRisk strong { color: var(--color-text); font-weight: 600; }
