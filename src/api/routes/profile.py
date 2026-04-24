@@ -12,10 +12,16 @@ GET    /api/v1/profile/{user_id}/history — assessment history
 import logging
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
-router = APIRouter(prefix="/api/v1/profile", tags=["Profile"])
+from src.api.auth import require_api_key
+
+router = APIRouter(
+    prefix="/api/v1/profile",
+    tags=["Profile"],
+    dependencies=[Depends(require_api_key)],
+)
 logger = logging.getLogger(__name__)
 
 
