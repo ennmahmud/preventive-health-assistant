@@ -1,0 +1,78 @@
+services:
+
+  # ── Backend (FastAPI) ────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # Defaults — override in .env
+      - DEBUG=false
+    volumes:
+      # Persistent data (SQLite user DB + assessment profiles)
+      - ./data/users.db:/app/data/users.db
+      - ./data/profiles:/app/data/profiles
+      # Trained models (mount from host — avoids re-training inside container)
+      - ./models/saved:/app/models/saved:ro
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health/status')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  # ── Frontend (nginx + React) ─────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  # ── Development override ─────────────────────────────────────────────────────
+  # Run with:  docker compose --profile dev up
+  backend-dev:
+    profiles: [dev]
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: >
+      uvicorn src.api.main:app
+        --host 0.0.0.0
+        --port 8000
+        --reload
+    env_file:
+      - .env
+    environment:
+      - DEBUG=true
+    volumes:
+      - .:/app
+      - /app/venv          # exclude host venv from bind-mount
+      - /app/__pycache__
+    ports:
+      - "8000:8000"
+
+  frontend-dev:
+    profiles: [dev]
+    image: node:20-alpine
+    working_dir: /app
+    command: sh -c "npm ci && npm run dev -- --host 0.0.0.0"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules  # exclude host node_modules from bind-mount
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://backend-dev:8000
+    depends_on:
+      - backend-dev
