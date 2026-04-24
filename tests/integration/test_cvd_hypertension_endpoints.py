@@ -328,7 +328,10 @@ class TestHypertensionAssess:
         assert data["risk"]["risk_category"] in ("Moderate", "High", "Very High")
 
     def test_assess_excludes_bp_inputs(self, client):
-        """Passing systolic_bp should be silently ignored (field not in schema)."""
+        """systolic_bp is accepted in the schema but must NOT appear as a model feature.
+        The hypertension model deliberately excludes BP to prevent circularity —
+        we screen for risk BEFORE the user knows their BP reading.
+        """
         r = client.post(
             "/api/v1/health/hypertension/assess",
             json={
@@ -337,8 +340,20 @@ class TestHypertensionAssess:
                 "include_recommendations": False,
             },
         )
-        # 422 because systolic_bp is not in HypertensionMetricsInput
-        assert r.status_code == 422
+        # BP is accepted (200) but silently excluded from model features
+        assert r.status_code == 200
+        data = r.json()
+        assert data["success"] is True
+        # Confirm BP did not leak into top risk factors
+        explanation = data.get("explanation") or {}
+        all_factors = (explanation.get("top_risk_factors") or []) + (
+            explanation.get("top_protective_factors") or []
+        )
+        bp_features = {"systolic_bp", "diastolic_bp", "BPXSY1", "BPXDI1"}
+        factor_names = {f.get("feature", "") for f in all_factors}
+        assert bp_features.isdisjoint(factor_names), (
+            f"BP features found in explanation: {bp_features & factor_names}"
+        )
 
     def test_assess_validation_missing_gender(self, client):
         r = client.post(
