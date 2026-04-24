@@ -7,6 +7,8 @@ import DashboardPage from './pages/DashboardPage';
 import AssessPage    from './pages/AssessPage';
 import ChatPage      from './pages/ChatPage';
 import ProgressPage  from './pages/ProgressPage';
+import ProfilePage   from './pages/ProfilePage';
+import SettingsPage  from './pages/SettingsPage';
 import './index.css';
 
 function AppRoutes() {
@@ -18,8 +20,10 @@ function AppRoutes() {
       <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
       <Route path="/assess"   element={<ProtectedRoute><AssessPage /></ProtectedRoute>} />
       <Route path="/chat"     element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
-      <Route path="/progress" element={<ProtectedRoute><ProgressPage /></ProtectedRoute>} />
-      <Route path="*"         element={<Navigate to={isAuthenticated ? '/dashboard' : '/signin'} replace />} />
+      <Route path="/progress"  element={<ProtectedRoute><ProgressPage /></ProtectedRoute>} />
+      <Route path="/profile"   element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+      <Route path="/settings"  element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+      <Route path="*"          element={<Navigate to={isAuthenticated ? '/dashboard' : '/signin'} replace />} />
     </Routes>
   );
 }
