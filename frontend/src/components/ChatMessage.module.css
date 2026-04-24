@@ -1,59 +1,72 @@
+/* iMessage-style chat bubbles */
 .wrapper {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  max-width: 820px;
+  align-items: flex-end;
+  gap: 8px;
+  max-width: 780px;
   width: 100%;
-  animation: fadeUp 0.2s ease;
+  animation: fadeUp var(--t-base) var(--ease-out);
 }
 
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(5px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-.user {
-  flex-direction: row-reverse;
-  align-self: flex-end;
-}
+.user { flex-direction: row-reverse; align-self: flex-end; }
 
 .avatar {
-  font-size: 1.25rem;
-  margin-top: 4px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--apple-gray-5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
   flex-shrink: 0;
+  margin-bottom: 2px;
 }
+
+.user .avatar { background: var(--color-accent); }
 
 .bubble {
-  padding: 12px 16px;
-  border-radius: var(--radius);
-  max-width: 78%;
-  line-height: 1.65;
+  padding: 10px 14px;
+  border-radius: 18px;
+  max-width: 72%;
+  line-height: 1.55;
+  font-size: 0.9rem;
 }
 
-/* User bubble */
+/* User bubble — Apple blue */
 .user .bubble {
   background: var(--color-accent);
-  color: #fff;
-  border-bottom-right-radius: var(--radius-sm);
+  color: #ffffff;
+  border-bottom-right-radius: 5px;
 }
 
-/* Assistant bubble */
+/* Assistant bubble — gray */
 .assistant .bubble {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-bottom-left-radius: var(--radius-sm);
+  background: var(--apple-gray-5);
+  color: var(--color-text);
+  border-bottom-left-radius: 5px;
 }
 
 .error {
-  border-color: var(--color-very-high) !important;
-  color: var(--color-very-high);
+  background: rgba(255,59,48,0.08) !important;
+  color: var(--apple-red) !important;
+  border: 1px solid rgba(255,59,48,0.2);
 }
 
-/* Markdown resets inside bubble */
-.bubble p { margin: 0 0 0.5em; }
+/* Markdown inside bubbles */
+.bubble p { margin: 0 0 0.4em; }
 .bubble p:last-child { margin-bottom: 0; }
-.bubble ul, .bubble ol { padding-left: 1.4em; margin: 0.4em 0; }
-.bubble li { margin: 0.25em 0; }
-.bubble strong { color: var(--color-text); }
-.bubble em { color: var(--color-text-muted); }
-.bubble hr { border: none; border-top: 1px solid var(--color-border); margin: 0.75em 0; }
+.bubble ul, .bubble ol { padding-left: 1.3em; margin: 0.3em 0; }
+.bubble li { margin: 0.2em 0; }
+.bubble strong { font-weight: 700; }
+.bubble em { opacity: 0.8; }
+.bubble hr { border: none; border-top: 1px solid rgba(0,0,0,0.08); margin: 0.6em 0; }
+
+/* User bubble text overrides */
+.user .bubble strong { color: #ffffff; }
+.user .bubble em { color: rgba(255,255,255,0.8); }

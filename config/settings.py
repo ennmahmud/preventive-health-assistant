@@ -80,21 +80,30 @@ CVD_CONFIG = {
         "medical_history": ["diabetes_status", "hypertension_status"],
     },
     "model_params": {
-        "n_estimators": 200,
-        "max_depth": 6,
-        "learning_rate": 0.1,
+        "n_estimators": 300,
+        "max_depth": 5,
+        "learning_rate": 0.05,
         "subsample": 0.8,
         "colsample_bytree": 0.8,
+        "min_child_weight": 3,
+        "gamma": 0.1,
+        "reg_alpha": 0.1,
+        "reg_lambda": 1.0,
         "random_state": 42,
-        "eval_metric": "auc",
-        "early_stopping_rounds": 20,
+        "eval_metric": "aucpr",
+        "early_stopping_rounds": 30,
+        "scale_pos_weight": "auto",
     },
     "validation": {
         "test_size": 0.2,
         "cv_folds": 5,
         "target_accuracy": 0.80,
         "target_auc": 0.80,
-    }
+    },
+    "screening": {
+        "min_recall_target": 0.65,
+        "fbeta_for_threshold": 2.0,
+    },
 }
 
 # Hypertension Risk Model Configuration
@@ -110,20 +119,29 @@ HYPERTENSION_CONFIG = {
         # (BP readings are used to DEFINE the target, not predict it)
     },
     "model_params": {
-        "n_estimators": 200,
-        "max_depth": 6,
-        "learning_rate": 0.1,
+        "n_estimators": 500,
+        "max_depth": 5,
+        "learning_rate": 0.05,
         "subsample": 0.8,
         "colsample_bytree": 0.8,
+        "min_child_weight": 5,
+        "gamma": 0.1,
+        "reg_alpha": 0.05,
+        "reg_lambda": 2.0,
         "random_state": 42,
         "eval_metric": "auc",
-        "early_stopping_rounds": 20,
+        "early_stopping_rounds": 30,
+        "scale_pos_weight": "auto",
     },
     "validation": {
         "test_size": 0.2,
         "cv_folds": 5,
-        "target_accuracy": 0.75,  # Slightly lower target — harder without BP as feature
-        "target_auc": 0.78,
+        "target_accuracy": 0.75,
+        "target_auc": 0.82,  # Raised — optional BP feature improves signal
+    },
+    "screening": {
+        "min_recall_target": 0.65,
+        "fbeta_for_threshold": 2.0,
     },
 }
 

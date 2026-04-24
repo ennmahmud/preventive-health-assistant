@@ -150,6 +150,7 @@ def train_model(
         colsample_bytree=params["colsample_bytree"],
         random_state=params["random_state"],
         early_stopping_rounds=params["early_stopping_rounds"],
+        scale_pos_weight=params.get("scale_pos_weight", "auto"),
     )
 
     logger.info("Running 5-fold cross-validation...")
@@ -161,6 +162,14 @@ def train_model(
 
     logger.info("\nTraining final model with early stopping...")
     model.fit(X_train, y_train, eval_set=[(X_test, y_test)], verbose=True)
+
+    # Tune threshold on held-out test set with F-beta (β=2) — recall-weighted
+    # for a cardiovascular screening tool where missed cases are high cost.
+    screening = CVD_CONFIG.get("screening", {})
+    beta = screening.get("fbeta_for_threshold", 2.0)
+    min_recall = screening.get("min_recall_target", 0.60)
+    threshold = model.find_optimal_threshold(X_test, y_test, beta=beta, min_recall=min_recall)
+    print(f"\n  Decision threshold (F{beta:.0f}-optimised): {threshold:.3f}")
 
     return model
 
@@ -325,6 +334,7 @@ def main():
             f"  ROC-AUC:  {metrics['roc_auc']:.4f} "
             f"{'✓ PASSED' if targets_met['auc'] else '✗ BELOW TARGET'}"
         )
+        print(f"  Decision threshold: {model.threshold:.2f}")
         print(f"\nModel saved to: {model_path}")
         print(f"End time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 

@@ -15,7 +15,9 @@ import logging
 from pathlib import Path
 from typing import List, Optional
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
+
+from src.api.auth import require_api_key
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
@@ -31,7 +33,11 @@ from src.api.services.cvd_prediction_service import cvd_prediction_service
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1/health/cvd", tags=["CVD Assessments"])
+router = APIRouter(
+    prefix="/api/v1/health/cvd",
+    tags=["CVD Assessments"],
+    dependencies=[Depends(require_api_key)],
+)
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────

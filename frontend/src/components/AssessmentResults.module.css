@@ -1,31 +1,33 @@
+/* Apple Health-style assessment results */
 .results {
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  padding: 24px;
+  gap: 16px;
+  padding: 20px;
   overflow-y: auto;
   flex: 1;
   min-height: 0;
 }
 
-/* Prevent flex-shrink from crushing cards inside the scrollable container */
 .results > * { flex-shrink: 0; }
 
+/* Hero risk card */
 .riskCard {
-  border: 1px solid;
-  border-radius: 14px;
+  border: 1px solid var(--color-separator);
+  border-radius: var(--radius-xl);
   padding: 20px;
   position: relative;
   overflow: hidden;
+  background: var(--color-surface);
+  box-shadow: var(--shadow);
 }
 
-/* Subtle gradient shimmer using the risk colour */
 .riskCard::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, currentColor 0%, transparent 60%);
-  opacity: 0.05;
+  background: linear-gradient(135deg, currentColor 0%, transparent 55%);
+  opacity: 0.04;
   pointer-events: none;
 }
 
@@ -33,189 +35,195 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 
-.emoji { font-size: 2.2rem; flex-shrink: 0; }
+.emoji { font-size: 2rem; flex-shrink: 0; }
 
-.conditionName { font-size: 0.78rem; color: var(--color-text-muted); margin-bottom: 2px; }
+.conditionName {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  margin-bottom: 2px;
+}
 
-.riskCategory { font-size: 1.15rem; font-weight: 800; }
+.riskCategory {
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
 
 .riskPct {
   margin-left: auto;
-  font-size: 2.2rem;
+  font-size: 2.4rem;
   font-weight: 900;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
 }
 
+/* Bar */
 .barTrack {
-  height: 8px;
-  background: rgba(255,255,255,0.08);
-  border-radius: 999px;
+  height: 6px;
+  background: var(--apple-gray-5);
+  border-radius: var(--radius-pill);
   overflow: hidden;
   margin-bottom: 14px;
 }
 
 .barFill {
   height: 100%;
-  border-radius: 999px;
-  transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: var(--radius-pill);
+  transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .narrative {
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   color: var(--color-text);
   line-height: 1.6;
   margin: 0 0 12px;
   padding: 12px 14px;
-  background: rgba(255,255,255,0.05);
-  border-radius: 8px;
+  background: var(--color-surface-2);
+  border-radius: var(--radius-sm);
   border-left: 3px solid currentColor;
 }
 
 .disclaimer {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   color: var(--color-text-muted);
   font-style: italic;
   margin: 0;
 }
 
-.section { display: flex; flex-direction: column; gap: 12px; }
+/* Sections */
+.section { display: flex; flex-direction: column; gap: 10px; }
 
 .sectionTitle {
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   font-weight: 700;
   color: var(--color-text);
+  letter-spacing: -0.01em;
   margin: 0;
 }
 
-.factors { display: flex; flex-direction: column; gap: 9px; }
+.factors { display: flex; flex-direction: column; gap: 7px; }
 
 .factorRow {
   display: grid;
   grid-template-columns: 1fr 100px 70px;
   align-items: center;
   gap: 8px;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
 }
 
-@media (max-width: 480px) {
-  .factorRow {
-    grid-template-columns: 1fr 60px 60px;
-    gap: 6px;
-    font-size: 0.75rem;
-  }
-  .riskPct { font-size: 1.6rem; }
-  .actions { flex-wrap: wrap; }
-  .chatBtn { order: -1; width: 100%; }
-}
-
-.factorName { color: var(--color-text); }
+.factorName { color: var(--color-text); font-weight: 500; }
 
 .factorBar {
-  height: 6px;
-  background: rgba(255,255,255,0.08);
-  border-radius: 999px;
+  height: 5px;
+  background: var(--apple-gray-5);
+  border-radius: var(--radius-pill);
   overflow: hidden;
 }
 
-.factorFill { height: 100%; border-radius: 999px; }
+.factorFill { height: 100%; border-radius: var(--radius-pill); }
+.factorTag { font-size: 0.7rem; color: var(--color-text-muted); text-align: right; }
 
-.factorTag { font-size: 0.72rem; color: var(--color-text-muted); }
-
-.recs { display: flex; flex-direction: column; gap: 9px; }
+/* Recommendations */
+.recs { display: flex; flex-direction: column; gap: 7px; }
 
 .rec {
   display: flex;
   gap: 12px;
   padding: 12px 14px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   background: var(--color-surface);
-  border-left: 3px solid var(--color-border);
-  transition: border-left-color 0.15s;
+  border: 1px solid var(--color-separator);
+  border-left: 3px solid var(--color-separator);
+  box-shadow: var(--shadow-xs);
 }
 
-.rec.high { border-left-color: #ef4444; }
-.rec.medium { border-left-color: #f59e0b; }
-.rec.low { border-left-color: #16a34a; }
+.rec.high   { border-left-color: var(--apple-red); }
+.rec.medium { border-left-color: var(--apple-orange); }
+.rec.low    { border-left-color: var(--apple-green); }
 
 .recPriority { font-size: 1rem; flex-shrink: 0; padding-top: 1px; }
 
 .recText strong {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   color: var(--color-text-muted);
   display: block;
-  margin-bottom: 3px;
+  margin-bottom: 2px;
 }
 
-.recText p {
-  margin: 0;
-  font-size: 0.85rem;
-  color: var(--color-text);
-  line-height: 1.45;
-}
+.recText p { margin: 0; font-size: 0.83rem; color: var(--color-text); line-height: 1.5; }
 
+/* Action buttons */
 .actions {
   display: flex;
-  gap: 10px;
-  padding-top: 4px;
+  gap: 8px;
+  padding-top: 2px;
   flex-shrink: 0;
 }
 
 .newBtn {
-  padding: 10px 16px;
-  background: transparent;
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
+  padding: 0 16px;
+  height: 40px;
+  background: var(--apple-gray-6);
+  border: none;
+  border-radius: var(--radius-sm);
   color: var(--color-text-muted);
-  cursor: pointer;
-  font-size: 0.87rem;
-  transition: all 0.15s;
+  font-size: 0.84rem;
+  font-weight: 500;
+  transition: background var(--t-fast), color var(--t-fast);
 }
-
-.newBtn:hover { color: var(--color-text); border-color: var(--color-text-muted); }
+.newBtn:hover { background: var(--apple-gray-5); color: var(--color-text); }
 
 .chatBtn {
   flex: 1;
-  padding: 10px 16px;
+  height: 40px;
   background: var(--color-accent);
-  color: white;
+  color: #ffffff;
   border: none;
-  border-radius: 8px;
-  font-size: 0.87rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
   font-weight: 600;
-  cursor: pointer;
-  transition: opacity 0.15s;
+  transition: background var(--t-fast);
 }
-
-.chatBtn:hover { opacity: 0.9; }
+.chatBtn:hover { background: var(--color-accent-hover); }
 
 .printBtn {
-  padding: 10px 14px;
-  background: transparent;
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
+  padding: 0 14px;
+  height: 40px;
+  background: var(--apple-gray-6);
+  border: none;
+  border-radius: var(--radius-sm);
   color: var(--color-text-muted);
-  cursor: pointer;
-  font-size: 0.87rem;
-  transition: all 0.15s;
-  white-space: nowrap;
+  font-size: 0.84rem;
+  transition: background var(--t-fast), color var(--t-fast);
 }
-
-.printBtn:hover { color: var(--color-text); border-color: var(--color-text-muted); }
+.printBtn:hover { background: var(--apple-gray-5); color: var(--color-text); }
 
 .toggleBtn {
-  background: transparent;
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
+  background: var(--apple-gray-6);
+  border: none;
+  border-radius: var(--radius-xs);
   color: var(--color-text-muted);
-  font-size: 0.78rem;
-  padding: 6px 12px;
+  font-size: 0.76rem;
+  font-weight: 500;
+  padding: 5px 12px;
+  height: 30px;
   cursor: pointer;
   align-self: flex-start;
-  transition: all 0.15s;
+  transition: background var(--t-fast), color var(--t-fast);
 }
-.toggleBtn:hover { color: var(--color-text); border-color: var(--color-text-muted); }
+.toggleBtn:hover { background: var(--apple-gray-5); color: var(--color-text); }
+
+@media (max-width: 480px) {
+  .factorRow { grid-template-columns: 1fr 60px 55px; }
+  .riskPct { font-size: 1.8rem; }
+  .actions { flex-wrap: wrap; }
+  .chatBtn { order: -1; width: 100%; }
+}

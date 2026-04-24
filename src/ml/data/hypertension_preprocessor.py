@@ -97,9 +97,16 @@ class HypertensionPreprocessor:
     """
     Preprocesses NHANES data for hypertension risk prediction.
 
-    Builds a dataset where the target is measured hypertension (BP >= 140/90)
-    but blood pressure readings themselves are NOT features, enabling use with
-    patients who do not know their blood pressure.
+    Blood pressure readings (systolic_bp / diastolic_bp) are included as
+    **optional** features.  They are never imputed — XGBoost learns the
+    optimal split direction for missing values, so the model works in two
+    modes:
+      • BP provided  → uses it as a strong signal alongside lifestyle factors
+      • BP unknown   → falls back to demographics/lifestyle only
+
+    The target is measured hypertension (BP >= 140/90) from the SAME NHANES
+    reading, so rows where BP is NaN are excluded from training (no target),
+    but partial-match rows (one reading NaN) are handled by taking the other.
 
     Example:
         >>> preprocessor = HypertensionPreprocessor()
@@ -258,8 +265,16 @@ class HypertensionPreprocessor:
     def handle_missing_values(
         self, df: pd.DataFrame, strategy: str = "median"
     ) -> pd.DataFrame:
-        """Impute missing values using median (numeric) and mode (categorical)."""
+        """Impute missing values using median (numeric) and mode (categorical).
+
+        BP columns (systolic_bp / diastolic_bp) are intentionally NOT imputed
+        — they are left as NaN so XGBoost learns the optimal split direction
+        for the "BP unknown" case during training.
+        """
         df = df.copy()
+
+        # Columns whose NaN carries meaning — do not impute
+        no_impute = set(BP_TARGET_COLS)
 
         missing = df.isnull().sum()
         for col in df.columns:
@@ -267,7 +282,10 @@ class HypertensionPreprocessor:
                 pct = 100 * missing[col] / len(df)
                 logger.info(f"  Missing {col}: {missing[col]} ({pct:.1f}%)")
 
-        numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+        numeric_cols = [
+            c for c in df.select_dtypes(include=[np.number]).columns
+            if c not in no_impute
+        ]
         categorical_cols = df.select_dtypes(include=["object", "category"]).columns.tolist()
 
         if numeric_cols:
@@ -361,16 +379,18 @@ class HypertensionPreprocessor:
         df = self.encode_categorical(df)
 
         # Step 7: Build final feature matrix
-        # Exclude: SEQN, raw BP columns (used for target), and doctor_diabetes
+        # Exclude: SEQN, doctor_diabetes, and BP columns.
+        # BP is NOT a model feature — it defines the target, so including it
+        # creates perfect circularity.  When a user knows their BP, the service
+        # layer applies AHA 2017 clinical thresholds directly on top of the
+        # model's lifestyle-based score.
         exclude_cols = ["SEQN", "doctor_diabetes"] + BP_TARGET_COLS
         feature_cols = [c for c in df.columns if c not in exclude_cols]
         X = df[feature_cols]
 
         self.feature_names = feature_cols
         logger.info(f"Final feature set: {len(feature_cols)} features")
-        logger.info(
-            f"BP excluded from features (used only for target definition)"
-        )
+        logger.info("BP excluded from features (clinical override applied at inference)")
 
         # Step 8: Stratified split
         logger.info("Step 8: Stratified train/test split")

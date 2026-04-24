@@ -1,28 +1,122 @@
-@import './styles/variables.css';
+@import '@fontsource/dm-serif-display';
+@import '@fontsource/plus-jakarta-sans/400.css';
+@import '@fontsource/plus-jakarta-sans/500.css';
+@import '@fontsource/plus-jakarta-sans/600.css';
+@import '@fontsource/plus-jakarta-sans/700.css';
 
+/* ─── Élan Design Tokens ──────────────────────────────────────── */
+:root {
+  /* Warm Charcoal scale */
+  --elan-ch-800: #2C2B28;
+  --elan-ch-700: #3D3B36;
+  --elan-ch-600: #524F48;
+  --elan-ch-500: #6B685F;
+  --elan-ch-400: #8C8980;
+  --elan-ch-300: #B3B0A8;
+  --elan-ch-200: #D4D2CC;
+  --elan-ch-100: #ECEAE5;
+  --elan-ch-50:  #F6F5F2;
+
+  /* Sage (Low risk) */
+  --elan-sg-700: #2D5C30;
+  --elan-sg-600: #4A7244;
+  --elan-sg-500: #5E8D58;
+  --elan-sg-200: #C8DECC;
+  --elan-sg-100: #E8F2E9;
+  --elan-sg-50:  #F3F9F3;
+
+  /* Amber (Moderate risk) */
+  --elan-am-700: #8A6620;
+  --elan-am-500: #B8872E;
+  --elan-am-400: #C4963C;
+  --elan-am-200: #E9D5A8;
+  --elan-am-100: #F5EACE;
+  --elan-am-50:  #FAF5E8;
+
+  /* Terracotta (High risk) */
+  --elan-tc-700: #8F3020;
+  --elan-tc-500: #B34430;
+  --elan-tc-400: #CC5840;
+  --elan-tc-200: #EEBA9E;
+  --elan-tc-100: #F8DDD5;
+  --elan-tc-50:  #FCF0EB;
+
+  /* Background & surface */
+  --elan-bg:      #F9F8F5;
+  --elan-surface: #FFFFFF;
+  --elan-border:  rgba(44,43,40,0.10);
+  --elan-sep:     rgba(44,43,40,0.07);
+
+  /* Typography */
+  --elan-serif: 'DM Serif Display', Georgia, serif;
+  --elan-sans:  'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+
+  /* Spacing scale (4pt) */
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px;
+  --sp-5:20px; --sp-6:24px; --sp-8:32px; --sp-10:40px;
+  --sp-12:48px; --sp-16:64px;
+
+  /* Radius */
+  --r-xs:6px; --r-sm:10px; --r-md:14px; --r-lg:20px;
+  --r-xl:28px; --r-pill:999px;
+
+  /* Shadows */
+  --shadow-xs: 0 1px 3px rgba(44,43,40,0.08),0 1px 2px rgba(44,43,40,0.06);
+  --shadow-sm: 0 2px 8px rgba(44,43,40,0.10),0 1px 3px rgba(44,43,40,0.07);
+  --shadow-md: 0 4px 16px rgba(44,43,40,0.12),0 2px 6px rgba(44,43,40,0.08);
+  --shadow-lg: 0 8px 32px rgba(44,43,40,0.14),0 4px 12px rgba(44,43,40,0.10);
+  --shadow-nav: 0 8px 32px rgba(44,43,40,0.40);
+
+  /* Animation */
+  --t-fast:120ms; --t-base:200ms; --t-slow:350ms;
+  --ease-spring:cubic-bezier(0.34,1.56,0.64,1);
+  --ease-out:cubic-bezier(0.16,1,0.3,1);
+  --ease-in:cubic-bezier(0.7,0,0.84,0);
+
+  /* Semantic aliases */
+  --color-text:       var(--elan-ch-800);
+  --color-text-muted: var(--elan-ch-400);
+  --color-bg:         var(--elan-bg);
+  --color-surface:    var(--elan-surface);
+  --color-border:     var(--elan-border);
+  --color-accent:     var(--elan-ch-800);
+  --color-low:        var(--elan-sg-600);
+  --color-moderate:   var(--elan-am-400);
+  --color-high:       var(--elan-tc-400);
+  --color-very-high:  var(--elan-ch-800);
+}
+
+/* ─── Reset ────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body, #root {
   height: 100%;
-  background: var(--color-bg);
-  color: var(--color-text);
-  font-family: var(--font-sans);
+  background: var(--elan-bg);
+  color: var(--elan-ch-800);
+  font-family: var(--elan-sans);
   font-size: 15px;
-  line-height: 1.6;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-a { color: var(--color-accent); text-decoration: none; }
-a:hover { color: var(--color-accent-hover); }
+a { color: inherit; text-decoration: none; }
 
-button {
-  cursor: pointer;
-  border: none;
-  outline: none;
-  font-family: inherit;
-  font-size: inherit;
+button, [role="button"] {
+  cursor: pointer; border: none; outline: none;
+  font-family: inherit; font-size: inherit;
 }
 
-::-webkit-scrollbar { width: 6px; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+
+:focus-visible {
+  outline: 2px solid var(--elan-ch-800);
+  outline-offset: 2px;
+  border-radius: var(--r-xs);
+}
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: var(--elan-ch-200); border-radius: var(--r-pill); }
+::-webkit-scrollbar-thumb:hover { background: var(--elan-ch-300); }
+::selection { background: rgba(44,43,40,0.12); color: var(--elan-ch-800); }

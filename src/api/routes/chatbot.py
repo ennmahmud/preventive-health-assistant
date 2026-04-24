@@ -13,7 +13,9 @@ import sys
 import logging
 from pathlib import Path
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+
+from src.api.auth import require_api_key
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
@@ -28,7 +30,11 @@ from src.chatbot.handlers.session import session_store
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1/chat", tags=["Chatbot"])
+router = APIRouter(
+    prefix="/api/v1/chat",
+    tags=["Chatbot"],
+    dependencies=[Depends(require_api_key)],
+)
 
 # Single shared conversation manager (stateless — all state lives in sessions)
 _conversation_manager = ConversationManager()

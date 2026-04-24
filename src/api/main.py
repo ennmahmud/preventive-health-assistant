@@ -16,6 +16,7 @@ from fastapi.responses import JSONResponse
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from config.settings import API_CONFIG
+from src.api.routes.auth import router as auth_router
 from src.api.routes.health import router as health_router
 from src.api.routes.cvd import router as cvd_router
 from src.api.routes.hypertension import router as hypertension_router
@@ -133,6 +134,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 # ============== Include Routers ==============
 
+app.include_router(auth_router)
 app.include_router(health_router)
 app.include_router(cvd_router)
 app.include_router(hypertension_router)

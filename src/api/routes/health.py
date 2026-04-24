@@ -9,8 +9,10 @@ from pathlib import Path
 from datetime import datetime
 import logging
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional
+
+from src.api.auth import require_api_key
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
@@ -32,7 +34,11 @@ from typing import List
 logger = logging.getLogger(__name__)
 
 # Create router with prefix and tags (for documentation grouping)
-router = APIRouter(prefix="/api/v1/health", tags=["Health Assessments"])
+router = APIRouter(
+    prefix="/api/v1/health",
+    tags=["Health Assessments"],
+    dependencies=[Depends(require_api_key)],
+)
 
 
 # ============== Health Check Endpoints ==============

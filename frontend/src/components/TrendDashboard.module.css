@@ -1,7 +1,8 @@
+/* Apple Health dashboard */
 .root {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
   padding: 20px;
   overflow-y: auto;
   flex: 1;
@@ -12,200 +13,125 @@
 .summary {
   display: flex;
   align-items: center;
-  gap: 0;
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
-  padding: 16px 20px;
+  border: 1px solid var(--color-separator);
+  border-radius: var(--radius-xl);
+  padding: 18px 20px;
   flex-shrink: 0;
+  box-shadow: var(--shadow-xs);
 }
 
-.summaryItem {
-  flex: 1;
-  text-align: center;
-}
+.summaryItem { flex: 1; text-align: center; }
 
 .summaryValue {
-  font-size: 1.8rem;
+  font-size: 1.75rem;
   font-weight: 800;
   color: var(--color-text);
   line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
 }
 
 .summaryLabel {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 500;
   color: var(--color-text-muted);
   margin-top: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .summaryDivider {
   width: 1px;
-  height: 40px;
-  background: var(--color-border);
+  height: 36px;
+  background: var(--color-separator);
 }
 
 /* Condition cards */
-.cards {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
+.cards { display: flex; flex-direction: column; gap: 12px; }
 
 .card {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   padding: 18px 20px;
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 14px;
+  border: 1px solid var(--color-separator);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xs);
 }
 
-.cardHeader {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+.cardHeader { display: flex; align-items: center; gap: 12px; }
 
-.cardEmoji { font-size: 1.6rem; line-height: 1; }
+.cardEmoji { font-size: 1.5rem; line-height: 1; }
 
 .cardInfo { flex: 1; }
 
 .cardLabel {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: var(--color-text);
+  letter-spacing: -0.01em;
 }
 
-.cardSub {
-  font-size: 0.75rem;
-  color: var(--color-text-muted);
-}
+.cardSub { font-size: 0.72rem; color: var(--color-text-muted); }
 
-.cardRisk {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-}
+.cardRisk { display: flex; flex-direction: column; align-items: flex-end; }
 
 .riskPct {
   font-size: 1.5rem;
   font-weight: 800;
   line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
 }
 
-.riskCat {
-  font-size: 0.72rem;
+.riskCat { font-size: 0.68rem; font-weight: 600; margin-top: 1px; }
+
+/* Bar in card */
+.barTrack {
+  height: 5px;
+  background: var(--apple-gray-5);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  transition: width 0.7s var(--ease-out);
+}
+
+/* Badge chip */
+.badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 0.68rem;
   font-weight: 600;
 }
 
-/* Delta badge */
-.delta {
-  font-size: 0.78rem;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 999px;
-  width: fit-content;
-}
+.badgeLow      { background: rgba(52,199,89,0.12);  color: var(--apple-green); }
+.badgeModerate { background: rgba(255,149,0,0.12);  color: var(--apple-orange); }
+.badgeHigh     { background: rgba(255,59,48,0.10);  color: var(--apple-red); }
+.badgeVeryHigh { background: rgba(255,59,48,0.16);  color: var(--apple-red); }
 
-.deltaGood {
-  background: color-mix(in srgb, #16a34a 12%, transparent);
-  color: #16a34a;
-}
+/* Change indicators */
+.arrowGood { font-size: 1rem; font-weight: 800; color: var(--apple-green); }
+.arrowBad  { font-size: 1rem; font-weight: 800; color: var(--apple-red); }
 
-.deltaBad {
-  background: color-mix(in srgb, #dc2626 10%, transparent);
-  color: #dc2626;
-}
-
-/* Sparkline */
-.sparkline {
-  width: 100%;
-  height: 56px;
-  display: block;
-}
-
-/* Timeline */
-.timeline {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.timelineItem {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.timelineDot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.timelineInfo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 0.78rem;
-}
-
-.timelineDate { color: var(--color-text-muted); min-width: 60px; }
-
-.timelinePct { font-weight: 700; }
-
-.timelineCat { color: var(--color-text-muted); }
-
-/* No data */
-.noData {
-  font-size: 0.82rem;
-  color: var(--color-text-muted);
-  font-style: italic;
-  text-align: center;
-  padding: 10px 0;
-}
-
-/* Empty / loading states */
+/* Empty / loading */
 .empty {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 48px 24px;
+  justify-content: center;
+  gap: 14px;
+  padding: 60px 32px;
   text-align: center;
   color: var(--color-text-muted);
 }
 
-.emptyIcon { font-size: 3rem; }
-
-.empty h3 {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--color-text);
-  margin: 0;
-}
-
-.empty p { font-size: 0.88rem; max-width: 320px; margin: 0; line-height: 1.5; }
-
-.loading {
-  text-align: center;
-  padding: 40px;
-  color: var(--color-text-muted);
-  font-size: 0.9rem;
-}
-
-.error {
-  text-align: center;
-  padding: 24px;
-  color: #ef4444;
-  font-size: 0.85rem;
-}
-
-@media (max-width: 480px) {
-  .root { padding: 16px; }
-  .summary { padding: 12px 14px; }
-  .summaryValue { font-size: 1.4rem; }
-  .card { padding: 14px 16px; }
-}
+.emptyIcon { font-size: 2.5rem; }
+.emptyTitle { font-size: 1.1rem; font-weight: 700; color: var(--color-text); }
+.emptyDesc { font-size: 0.85rem; max-width: 280px; line-height: 1.6; }

@@ -106,6 +106,15 @@ class HypertensionPredictionService:
                     bg[feat] = np.random.uniform(150, 250, n)
                 elif feat == "hdl_cholesterol":
                     bg[feat] = np.random.uniform(30, 80, n)
+                elif feat == "systolic_bp":
+                    # Mix of known (80%) and NaN (20%) to match training distribution
+                    vals = np.random.uniform(100, 160, n)
+                    vals[np.random.choice(n, n // 5, replace=False)] = np.nan
+                    bg[feat] = vals
+                elif feat == "diastolic_bp":
+                    vals = np.random.uniform(60, 100, n)
+                    vals[np.random.choice(n, n // 5, replace=False)] = np.nan
+                    bg[feat] = vals
                 elif feat == "diabetes_indicator":
                     bg[feat] = np.random.choice([0.0, 1.0], n, p=[0.85, 0.15])
                 elif any(feat.startswith(p) for p in [
@@ -213,7 +222,8 @@ class HypertensionPredictionService:
             "vigorous_rec": 0.0,
             "moderate_rec": 0.0,
             "sedentary_minutes": sedentary,
-            # NOTE: systolic_bp and diastolic_bp are intentionally excluded
+            # BP is handled as a clinical override in predict(), not as a model feature,
+            # to avoid circularity (target is defined from the same BP readings).
         }
 
         # One-hot: race_ethnicity
@@ -275,10 +285,27 @@ class HypertensionPredictionService:
         prediction = int(self.model.predict(features_df)[0])
         confidence = float(max(proba))
 
-        # Hypertension risk thresholds (preventive model — lower boundaries than CVD)
-        # Lower cut-offs reflect that BP-based features are excluded (AUC ~0.78 target);
-        # model predicts future hypertension risk from lifestyle factors.
-        # Ref: JNC 8 / AHA 2017 hypertension prevention guidelines
+        # Clinical BP override — applied on top of the lifestyle model score.
+        # The model is trained without BP to avoid circularity (target = BP threshold),
+        # so when the user provides a known reading we apply direct clinical thresholds
+        # (AHA 2017: Stage 2 ≥ 140/90, Stage 1 ≥ 130/80).
+        systolic_bp  = metrics.get("systolic_bp")
+        diastolic_bp = metrics.get("diastolic_bp")
+        bp_note: Optional[str] = None
+        if systolic_bp is not None or diastolic_bp is not None:
+            sbp = float(systolic_bp or 0)
+            dbp = float(diastolic_bp or 0)
+            if sbp >= 140 or dbp >= 90:
+                risk_probability = max(risk_probability, 0.88)
+                prediction = 1
+                bp_note = f"Stage 2 hypertension confirmed (BP {sbp:.0f}/{dbp:.0f} mmHg)"
+            elif sbp >= 130 or dbp >= 80:
+                risk_probability = max(risk_probability, 0.55)
+                prediction = 1 if risk_probability >= 0.5 else prediction
+                bp_note = f"Stage 1 / elevated BP ({sbp:.0f}/{dbp:.0f} mmHg)"
+            else:
+                bp_note = f"BP within normal range ({sbp:.0f}/{dbp:.0f} mmHg)"
+
         if risk_probability < 0.15:      category = "Low"
         elif risk_probability < 0.30:    category = "Moderate"
         elif risk_probability < 0.50:    category = "High"
@@ -295,6 +322,7 @@ class HypertensionPredictionService:
                 "risk_category":    category,
                 "prediction":       prediction,
                 "confidence":       round(confidence, 4),
+                **({"bp_note": bp_note} if bp_note else {}),
             },
             "model_version": self.model_version,
         }
