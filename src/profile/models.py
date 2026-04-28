@@ -1,85 +1,32 @@
 """
-Profile Models
-==============
-SQLAlchemy ORM models and Pydantic schemas for user health profiles
-and assessment history.
+Profile Models (Pydantic)
+=========================
+Pydantic schemas for user health profiles and assessment history.
+
+The ORM half lives in `src/api/db/models.py` — this module re-exports
+those classes under their old names so existing imports keep working:
+
+    from src.profile.models import (
+        Base, UserProfileORM, AssessmentResultORM,
+        UserProfile, AssessmentResult,
+    )
 """
 
-import json
+from __future__ import annotations
+
 import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
-from sqlalchemy import (
-    Boolean, Column, DateTime, Float, Integer, String, Text, create_engine,
-)
-from sqlalchemy.orm import DeclarativeBase, Session as OrmSession
+
+# ── Re-export ORM classes under their legacy names ───────────────────────────
+from src.api.db.database import Base  # noqa: F401
+from src.api.db.models import UserProfile as UserProfileORM  # noqa: F401
+from src.api.db.models import AssessmentResult as AssessmentResultORM  # noqa: F401
 
 
-# ── SQLAlchemy ORM ────────────────────────────────────────────────────────────
-
-class Base(DeclarativeBase):
-    pass
-
-
-class UserProfileORM(Base):
-    __tablename__ = "user_profiles"
-
-    user_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-    # Demographics
-    age = Column(Integer, nullable=True)
-    biological_sex = Column(String, nullable=True)
-    height_cm = Column(Float, nullable=True)
-    weight_kg = Column(Float, nullable=True)
-    bmi = Column(Float, nullable=True)
-
-    # Lifestyle
-    activity_level = Column(String, nullable=True)   # sedentary|light|moderate|active
-    smoking_status = Column(String, nullable=True)   # never|former|current
-    diet_quality = Column(String, nullable=True)     # healthy|mixed|poor
-    sleep_hours = Column(String, nullable=True)      # under5|5to6|7to8|over8
-    alcohol_weekly = Column(String, nullable=True)   # none|light|moderate|heavy
-    stress_level = Column(Integer, nullable=True)    # 1–5
-    salt_intake = Column(String, nullable=True)      # low|moderate|high
-    sugar_intake = Column(String, nullable=True)     # none|occasional|daily|heavy
-
-    # Condition-specific flags
-    family_diabetes = Column(Boolean, nullable=True)
-    family_cvd = Column(Boolean, nullable=True)
-    family_htn = Column(Boolean, nullable=True)
-    prediabetes_flag = Column(Boolean, nullable=True)
-    symptom_flags_json = Column(Text, nullable=True)   # JSON list
-
-    # Risk history (last known values)
-    last_diabetes_risk = Column(Float, nullable=True)
-    last_cvd_risk = Column(Float, nullable=True)
-    last_htn_risk = Column(Float, nullable=True)
-    last_assessment_date = Column(DateTime, nullable=True)
-    assessments_completed = Column(Integer, default=0)
-
-    # ChromaDB index reference
-    chroma_doc_id = Column(String, nullable=True)
-
-
-class AssessmentResultORM(Base):
-    __tablename__ = "assessment_results"
-
-    result_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    user_id = Column(String, nullable=False, index=True)
-    session_id = Column(String, nullable=True)
-    condition = Column(String, nullable=False)
-    risk_probability = Column(Float, nullable=False)
-    risk_category = Column(String, nullable=False)
-    raw_result_json = Column(Text, nullable=True)
-    lifestyle_inputs_json = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-
-# ── Pydantic Models ───────────────────────────────────────────────────────────
+# ── Pydantic Models ──────────────────────────────────────────────────────────
 
 class UserProfile(BaseModel):
     user_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -124,12 +71,16 @@ class UserProfile(BaseModel):
 
     @classmethod
     def from_orm_model(cls, orm: UserProfileORM) -> "UserProfile":
-        flags = []
-        if orm.symptom_flags_json:
+        # symptom_flags is a JSON column (JSONB on Postgres). Defensively
+        # coerce in case the DB returns None or a stringified blob.
+        flags = orm.symptom_flags or []
+        if isinstance(flags, str):
+            import json
             try:
-                flags = json.loads(orm.symptom_flags_json)
+                flags = json.loads(flags)
             except Exception:
                 flags = []
+
         return cls(
             user_id=orm.user_id,
             created_at=orm.created_at or datetime.utcnow(),
@@ -151,7 +102,7 @@ class UserProfile(BaseModel):
             family_cvd=orm.family_cvd,
             family_htn=orm.family_htn,
             prediabetes_flag=orm.prediabetes_flag,
-            symptom_flags=flags,
+            symptom_flags=list(flags) if flags else [],
             last_diabetes_risk=orm.last_diabetes_risk,
             last_cvd_risk=orm.last_cvd_risk,
             last_htn_risk=orm.last_htn_risk,
@@ -161,6 +112,10 @@ class UserProfile(BaseModel):
         )
 
     def to_orm_dict(self) -> Dict[str, Any]:
+        """
+        Returns a dict suitable for setattr-ing onto a UserProfileORM.
+        `symptom_flags` is a real JSON column now — pass the raw list.
+        """
         return {
             "user_id": self.user_id,
             "updated_at": datetime.utcnow(),
@@ -181,7 +136,7 @@ class UserProfile(BaseModel):
             "family_cvd": self.family_cvd,
             "family_htn": self.family_htn,
             "prediabetes_flag": self.prediabetes_flag,
-            "symptom_flags_json": json.dumps(self.symptom_flags),
+            "symptom_flags": list(self.symptom_flags or []),
             "last_diabetes_risk": self.last_diabetes_risk,
             "last_cvd_risk": self.last_cvd_risk,
             "last_htn_risk": self.last_htn_risk,

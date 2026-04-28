@@ -1,8 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import TopBar from '../components/layout/TopBar';
 import FloatingNav from '../components/layout/FloatingNav';
 import ElanCard from '../components/ui/ElanCard';
 import RiskBadge from '../components/health/RiskBadge';
+import { fetchHistory, readLocal } from '../utils/assessmentHistory';
+import { ChevronRight } from 'lucide-react';
 
 const CONDITION_LABELS = {
   diabetes: 'Diabetes', cvd: 'Heart Disease', hypertension: 'Hypertension',
@@ -12,14 +16,14 @@ const RISK_COLORS = {
   high: 'var(--elan-tc-400)', very_high: 'var(--elan-ch-800)',
 };
 
-function TrendBar({ history, condition }) {
+function TrendBar({ history, condition, onOpen }) {
   if (!history.length) return null;
   const latest = history[0];
   const pct = Math.round((latest.result?.probability ?? 0) * 100);
   const color = RISK_COLORS[latest.result?.risk_level ?? 'low'];
 
   return (
-    <ElanCard style={{ padding: '16px 20px' }}>
+    <ElanCard style={{ padding: '16px 20px' }} onClick={() => onOpen?.(latest)}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
         <span style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--elan-ch-800)' }}>
           {CONDITION_LABELS[condition] ?? condition}
@@ -53,13 +57,16 @@ function TrendBar({ history, condition }) {
 }
 
 export default function ProgressPage() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [history, setHistory] = useState([]);
 
   useEffect(() => {
-    try {
-      setHistory(JSON.parse(localStorage.getItem('elan_assessments') || '[]'));
-    } catch { setHistory([]); }
-  }, []);
+    setHistory(readLocal(user?.id));
+    if (user?.id) {
+      fetchHistory(user.id).then(setHistory).catch(() => { /* keep cache */ });
+    }
+  }, [user?.id]);
 
   const byCondition = history.reduce((acc, a) => {
     (acc[a.condition] = acc[a.condition] || []).push(a); return acc;
@@ -80,7 +87,8 @@ export default function ProgressPage() {
   return (
     <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: 'var(--elan-bg)' }}>
       <TopBar />
-      <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px 120px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 120 }}>
+        <div className="elan-page-wrap">
         <h1 style={{ fontFamily: 'var(--elan-serif)', fontSize: '1.8rem', color: 'var(--elan-ch-800)', marginBottom: 8, letterSpacing: '-0.02em' }}>
           Your progress
         </h1>
@@ -118,7 +126,12 @@ export default function ProgressPage() {
         {Object.entries(byCondition).length > 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {Object.entries(byCondition).map(([cond, recs]) => (
-              <TrendBar key={cond} condition={cond} history={recs} />
+              <TrendBar
+                key={cond}
+                condition={cond}
+                history={recs}
+                onOpen={(latest) => navigate('/assess', { state: { condition: cond, result: latest.result } })}
+              />
             ))}
           </div>
         ) : (
@@ -137,7 +150,11 @@ export default function ProgressPage() {
             </h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {history.map((a, i) => (
-                <ElanCard key={i} style={{ padding: '12px 18px' }}>
+                <ElanCard
+                  key={`${a.condition}-${a.completedAt ?? i}`}
+                  style={{ padding: '12px 18px' }}
+                  onClick={() => navigate('/assess', { state: { condition: a.condition, result: a.result } })}
+                >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div>
                       <div style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--elan-ch-800)', textTransform: 'capitalize' }}>
@@ -152,6 +169,7 @@ export default function ProgressPage() {
                       <span style={{ fontSize: '0.875rem', fontFamily: 'var(--elan-serif)', color: RISK_COLORS[a.result?.risk_level ?? 'low'] }}>
                         {Math.round((a.result?.probability ?? 0) * 100)}%
                       </span>
+                      <ChevronRight size={16} color="var(--elan-ch-300)" />
                     </div>
                   </div>
                 </ElanCard>
@@ -159,6 +177,7 @@ export default function ProgressPage() {
             </div>
           </section>
         )}
+        </div>
       </div>
       <FloatingNav />
     </div>

@@ -5,19 +5,22 @@ const STYLES = {
   very_high: { bg: 'var(--elan-ch-100)', border: 'var(--elan-ch-200)', text: 'var(--elan-ch-800)',  label: 'Very High' },
 };
 
-export default function RiskBadge({ level = 'low' }) {
+export default function RiskBadge({ level = 'low', size = 'md' }) {
   const s = STYLES[level] ?? STYLES.low;
+  const isLg = size === 'lg';
   return (
     <span style={{
-      display: 'inline-flex', alignItems: 'center', gap: 5,
-      padding: '3px 10px', borderRadius: 'var(--r-pill)',
+      display: 'inline-flex', alignItems: 'center', gap: isLg ? 7 : 5,
+      padding: isLg ? '6px 14px' : '3px 10px', borderRadius: 'var(--r-pill)',
       background: s.bg, border: `1px solid ${s.border}`,
-      color: s.text, fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.02em',
+      color: s.text, fontSize: isLg ? '0.85rem' : '0.72rem',
+      fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase',
     }}>
       <span style={{
-        width: 6, height: 6, borderRadius: '50%', background: s.text, flexShrink: 0,
+        width: isLg ? 8 : 6, height: isLg ? 8 : 6,
+        borderRadius: '50%', background: s.text, flexShrink: 0,
       }} />
-      {s.label}
+      {s.label} risk
     </span>
   );
 }

@@ -13,6 +13,12 @@ class ChatRequest(BaseModel):
     message: str = Field(..., min_length=1, max_length=2000, description="User message")
     session_id: Optional[str] = Field(None, description="Session ID (omit to start a new session)")
     user_id: Optional[str] = Field(None, description="Stable user UUID (from localStorage) for profile memory")
+    assessment_context: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Completed assessment result sent by the frontend on the first chat message "
+                    "after a wizard assessment. Shape: {condition, completedAt, result: {probability, "
+                    "risk_level, interpretation, top_factors, protective_factors, recommendations}}",
+    )
 
     class Config:
         json_schema_extra = {
@@ -20,6 +26,7 @@ class ChatRequest(BaseModel):
                 "message": "Check my diabetes risk",
                 "session_id": None,
                 "user_id": None,
+                "assessment_context": None,
             }
         }
 

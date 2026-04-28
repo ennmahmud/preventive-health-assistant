@@ -7,6 +7,7 @@ import {
   changePassword as apiChangePassword,
   deleteAccount as apiDeleteAccount,
 } from '../api/auth';
+import { clearLocal as clearAssessmentCache } from '../utils/assessmentHistory';
 
 const AuthContext = createContext(null);
 
@@ -50,9 +51,12 @@ export function AuthProvider({ children }) {
   }, []);
 
   const logout = useCallback(() => {
+    // Wipe this user's cached assessment history so the next account
+    // logging in on the same browser doesn't see leftover data.
+    clearAssessmentCache(user?.id);
     apiLogout();
     setUser(null);
-  }, []);
+  }, [user?.id]);
 
   /**
    * Update profile fields (name, dob, gender, height, weight).
@@ -76,8 +80,9 @@ export function AuthProvider({ children }) {
    */
   const deleteAccount = useCallback(async (password) => {
     await apiDeleteAccount(password);
+    clearAssessmentCache(user?.id);
     setUser(null);
-  }, []);
+  }, [user?.id]);
 
   return (
     <AuthContext.Provider value={{

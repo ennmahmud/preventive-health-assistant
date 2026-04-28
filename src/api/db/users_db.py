@@ -1,61 +1,61 @@
 """
-SQLite User Store
-=================
-Persistent user storage backed by SQLite (stdlib sqlite3 — no extra deps).
+User Store (SQLAlchemy)
+=======================
+Thin wrapper over the unified `User` ORM model. Returns plain dicts so
+the rest of the codebase (which was written against the old raw-sqlite3
+helpers) keeps working without changes.
 
-The database file lives at PROJECT_ROOT/data/users.db and is created
-automatically on first use. Thread-safe via check_same_thread=False +
-a module-level lock.
+ON DELETE CASCADE on user_profiles / assessment_results / profile_embeddings
+means `delete_user()` now wipes a user's entire data set in one statement
+— no more orphaned profile rows.
 
 Public API
 ----------
     init_db()
-    create_user(name, email, password_hash) -> dict
+    create_user(user_id, name, email, password_hash, created_at) -> dict
     get_user_by_email(email) -> dict | None
-    get_user_by_id(user_id) -> dict | None
+    get_user_by_id(user_id)  -> dict | None
     update_user(user_id, **fields) -> dict | None
     delete_user(user_id) -> bool
 """
 
-import sqlite3
-import threading
-from pathlib import Path
+from __future__ import annotations
 
-_DB_PATH = Path(__file__).parent.parent.parent.parent / "data" / "users.db"
-_lock = threading.Lock()
+from typing import Any
 
+from sqlalchemy.exc import IntegrityError
 
-def _connect() -> sqlite3.Connection:
-    conn = sqlite3.connect(str(_DB_PATH), check_same_thread=False)
-    conn.row_factory = sqlite3.Row
-    return conn
+from src.api.db.database import Base, SessionLocal, engine
+from src.api.db.models import User  # noqa: F401  (registers ORM mapping)
+# Import the rest so Base.metadata.create_all() picks them up.
+from src.api.db.models import (  # noqa: F401
+    AssessmentResult,
+    ProfileEmbedding,
+    UserProfile,
+)
 
 
 def init_db() -> None:
-    """Create the users table if it doesn't exist. Called once at startup."""
-    _DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with _lock, _connect() as conn:
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                id            TEXT PRIMARY KEY,
-                name          TEXT NOT NULL,
-                email         TEXT NOT NULL UNIQUE,
-                password_hash TEXT NOT NULL,
-                dob           TEXT DEFAULT '',
-                gender        TEXT DEFAULT '',
-                height        TEXT DEFAULT '',
-                weight        TEXT DEFAULT '',
-                created_at    TEXT NOT NULL
-            )
-        """)
-        conn.commit()
+    """Create all tables on first boot. Safe to call repeatedly."""
+    # On Postgres, ensure the pgvector extension is available before
+    # CREATE TABLE runs (the embedding column references vector(384)).
+    if engine.dialect.name == "postgresql":
+        from sqlalchemy import text
+        with engine.begin() as conn:
+            conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+
+    Base.metadata.create_all(engine)
 
 
-def _row_to_dict(row: sqlite3.Row | None) -> dict | None:
-    if row is None:
+# ── Helpers ──────────────────────────────────────────────────────────────────
+
+def _user_to_dict(u: User | None) -> dict[str, Any] | None:
+    if u is None:
         return None
-    return dict(row)
+    return u.to_dict()
 
+
+# ── CRUD ─────────────────────────────────────────────────────────────────────
 
 def create_user(
     user_id: str,
@@ -65,35 +65,34 @@ def create_user(
     created_at: str,
 ) -> dict:
     """Insert a new user. Raises ValueError if email already exists."""
-    with _lock, _connect() as conn:
+    with SessionLocal() as session:
+        user = User(
+            id=user_id,
+            name=name,
+            email=email,
+            password_hash=password_hash,
+            created_at=created_at,
+        )
+        session.add(user)
         try:
-            conn.execute(
-                """
-                INSERT INTO users (id, name, email, password_hash, created_at)
-                VALUES (?, ?, ?, ?, ?)
-                """,
-                (user_id, name, email, password_hash, created_at),
-            )
-            conn.commit()
-        except sqlite3.IntegrityError:
+            session.commit()
+        except IntegrityError:
+            session.rollback()
             raise ValueError(f"Email already registered: {email}")
-    return get_user_by_id(user_id)
+        session.refresh(user)
+        return _user_to_dict(user)
 
 
 def get_user_by_email(email: str) -> dict | None:
-    with _lock, _connect() as conn:
-        row = conn.execute(
-            "SELECT * FROM users WHERE email = ?", (email,)
-        ).fetchone()
-    return _row_to_dict(row)
+    with SessionLocal() as session:
+        user = session.query(User).filter(User.email == email).one_or_none()
+        return _user_to_dict(user)
 
 
 def get_user_by_id(user_id: str) -> dict | None:
-    with _lock, _connect() as conn:
-        row = conn.execute(
-            "SELECT * FROM users WHERE id = ?", (user_id,)
-        ).fetchone()
-    return _row_to_dict(row)
+    with SessionLocal() as session:
+        user = session.get(User, user_id)
+        return _user_to_dict(user)
 
 
 def update_user(user_id: str, **fields) -> dict | None:
@@ -107,21 +106,28 @@ def update_user(user_id: str, **fields) -> dict | None:
     if not updates:
         return get_user_by_id(user_id)
 
-    set_clause = ", ".join(f"{k} = ?" for k in updates)
-    values = list(updates.values()) + [user_id]
-
-    with _lock, _connect() as conn:
-        conn.execute(
-            f"UPDATE users SET {set_clause} WHERE id = ?", values
-        )
-        conn.commit()
-
-    return get_user_by_id(user_id)
+    with SessionLocal() as session:
+        user = session.get(User, user_id)
+        if not user:
+            return None
+        for k, v in updates.items():
+            setattr(user, k, v)
+        session.commit()
+        session.refresh(user)
+        return _user_to_dict(user)
 
 
 def delete_user(user_id: str) -> bool:
-    """Delete user by ID. Returns True if a row was deleted."""
-    with _lock, _connect() as conn:
-        cursor = conn.execute("DELETE FROM users WHERE id = ?", (user_id,))
-        conn.commit()
-    return cursor.rowcount > 0
+    """
+    Delete user by ID. Returns True if a row was deleted.
+
+    ON DELETE CASCADE on the dependent tables means this single statement
+    also removes the user's profile, assessment history, and embedding row.
+    """
+    with SessionLocal() as session:
+        user = session.get(User, user_id)
+        if not user:
+            return False
+        session.delete(user)
+        session.commit()
+        return True

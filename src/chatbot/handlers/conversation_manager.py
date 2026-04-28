@@ -21,11 +21,12 @@ Flow:
 import logging
 import sys
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
 from src.chatbot.intents.classifier import classify_intent, Intent
+from src.chatbot.llm.claude_service import claude_service
 from src.chatbot.intents.entities import extract_entities
 from src.chatbot.handlers.session import Session, session_store
 from src.chatbot.responses.response_generator import ResponseGenerator
@@ -55,6 +56,7 @@ class ConversationManager:
         session_id: Optional[str],
         message: str,
         user_id: Optional[str] = None,
+        assessment_context: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """
         Process one user message and return:
@@ -68,6 +70,11 @@ class ConversationManager:
         """
         session = session_store.get_or_create(session_id)
         session.add_message("user", message)
+
+        # If the frontend sent a completed wizard assessment on this turn, store it
+        # in the session so Claude can reference it for follow-up questions.
+        if assessment_context and not session.last_result:
+            self._ingest_frontend_context(session, assessment_context)
 
         # Attach user_id if provided (first time or reconnect)
         if user_id and not session.user_id:
@@ -209,6 +216,18 @@ class ConversationManager:
 
         if name == "ask_about_result":
             if session.last_result:
+                lifestyle = {**session.lifestyle_answers, **session.metrics}
+                history = self._chat_history_for_claude(session)
+                ai_reply = claude_service.explain_result(
+                    condition=session.last_assessment_type,
+                    result=session.last_result,
+                    lifestyle_answers=lifestyle or None,
+                    user_question=message,
+                    conversation_history=history,
+                )
+                if ai_reply:
+                    return ai_reply, None
+                # Fallback to template if Claude is unavailable
                 return self._response_gen.explain_result(
                     session.last_assessment_type, session.last_result
                 ), None
@@ -216,6 +235,14 @@ class ConversationManager:
 
         if name == "ask_for_recommendation":
             if session.last_result:
+                lifestyle = {**session.lifestyle_answers, **session.metrics}
+                ai_reply = claude_service.generate_lifestyle_plan(
+                    condition=session.last_assessment_type,
+                    result=session.last_result,
+                    lifestyle_answers=lifestyle or None,
+                )
+                if ai_reply:
+                    return ai_reply, None
                 return self._response_gen.recommendations_summary(
                     session.last_assessment_type, session.last_result
                 ), None
@@ -223,6 +250,24 @@ class ConversationManager:
 
         if session.active_assessment:
             return self._collect_or_predict(session), None
+
+        # Freeform question — hand to Claude with any available context
+        assessment_ctx = None
+        if session.last_result:
+            assessment_ctx = {
+                "condition": session.last_assessment_type,
+                "result": session.last_result,
+            }
+        lifestyle = {**session.lifestyle_answers, **session.metrics}
+        history = self._chat_history_for_claude(session)
+        ai_reply = claude_service.answer_question(
+            question=message,
+            assessment_context=assessment_ctx,
+            conversation_history=history,
+            lifestyle_answers=lifestyle or None,
+        )
+        if ai_reply:
+            return ai_reply, None
 
         return self._response_gen.unknown_intent(), None
 
@@ -362,6 +407,84 @@ class ConversationManager:
             return result
 
         raise ValueError(f"Unknown condition: {condition}")
+
+    def _ingest_frontend_context(
+        self, session: Session, ctx: Dict[str, Any]
+    ) -> None:
+        """Convert a frontend-normalized assessment result into the backend prediction
+        service shape and store it as session.last_result so Claude and the template
+        responses can reference it on follow-up questions.
+
+        Frontend shape:
+          { condition, completedAt, result: { probability, risk_level, interpretation,
+            top_factors: [str, ...], protective_factors: [str, ...], recommendations } }
+
+        Backend shape expected by claude_service._build_context():
+          { risk: { risk_probability, risk_percentage, risk_category },
+            explanation: { top_risk_factors: [{feature}, ...],
+                           top_protective_factors: [{feature}, ...], summary },
+            recommendations }
+        """
+        try:
+            condition = ctx.get("condition", "")
+            result = ctx.get("result", {})
+            probability = float(result.get("probability", 0))
+            risk_level = result.get("risk_level", "low")
+
+            _level_to_category = {
+                "low": "Low Risk",
+                "moderate": "Moderate Risk",
+                "high": "High Risk",
+                "very_high": "Very High Risk",
+            }
+            risk_category = _level_to_category.get(
+                risk_level, risk_level.replace("_", " ").title()
+            )
+
+            def _to_factor_list(items):
+                if not items:
+                    return []
+                if isinstance(items[0], dict):
+                    return items[:5]
+                return [{"feature": f} for f in items[:5]]
+
+            backend_result = {
+                "risk": {
+                    "risk_probability": probability,
+                    "risk_percentage": round(probability * 100, 1),
+                    "risk_category": risk_category,
+                    "prediction": 1 if probability >= 0.5 else 0,
+                },
+                "explanation": {
+                    "top_risk_factors": _to_factor_list(result.get("top_factors", [])),
+                    "top_protective_factors": _to_factor_list(
+                        result.get("protective_factors", [])
+                    ),
+                    "summary": result.get("interpretation", ""),
+                },
+                "recommendations": result.get("recommendations", []),
+            }
+
+            session.store_result(condition, backend_result)
+            logger.info(
+                "Session %s: ingested frontend assessment context (%s, %.0f%%)",
+                session.session_id, condition, probability * 100,
+            )
+        except Exception as e:
+            logger.warning("Failed to ingest frontend assessment context: %s", e)
+
+    def _chat_history_for_claude(self, session: Session) -> List[Dict[str, str]]:
+        """Return the last 8 messages (4 turns) as Claude-compatible conversation history.
+
+        The current user message has already been appended to session.history by
+        handle_message(), so we strip the final entry to avoid duplicating it
+        in the prompt that claude_service builds.
+        """
+        msgs = session.history[:-1] if len(session.history) > 1 else []
+        return [
+            {"role": m["role"], "content": m["content"]}
+            for m in msgs[-8:]
+        ]
 
     def _persist_result(self, session: Session, result: Dict[str, Any]) -> None:
         """Save result and update profile for logged-in users."""

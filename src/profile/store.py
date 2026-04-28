@@ -1,44 +1,56 @@
 """
 Profile Store
 =============
-SQLite-backed CRUD for user profiles and assessment history.
+SQLAlchemy-backed CRUD for user profiles and assessment history.
+
+Uses the shared engine from `src.api.db.database` so user accounts,
+profiles, assessments, and embeddings all live in the same database.
+JSON blobs (raw_result, lifestyle_inputs, symptom_flags) are stored
+in JSONB columns on Postgres for indexable querying.
 """
 
-import json
+from __future__ import annotations
+
 import logging
-from pathlib import Path
 from typing import List, Optional
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
-
+from src.api.db.database import SessionLocal, engine
 from src.profile.models import (
-    Base, UserProfileORM, AssessmentResultORM, UserProfile, AssessmentResult
+    AssessmentResult,
+    AssessmentResultORM,
+    UserProfile,
+    UserProfileORM,
 )
 
 logger = logging.getLogger(__name__)
 
-_DEFAULT_DB_PATH = Path(__file__).parent.parent.parent / "data" / "profiles" / "profiles.db"
-
 
 class ProfileStore:
+    """
+    Backwards-compatible wrapper. The `db_url` argument is accepted but
+    ignored — the shared engine in `src.api.db.database` is the single
+    source of truth.
+    """
+
     def __init__(self, db_url: Optional[str] = None):
-        url = db_url or f"sqlite:///{_DEFAULT_DB_PATH}"
-        _DEFAULT_DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-        self.engine = create_engine(url, connect_args={"check_same_thread": False})
-        Base.metadata.create_all(self.engine)
+        if db_url:
+            logger.warning(
+                "ProfileStore: db_url=%s ignored — using shared engine (%s)",
+                db_url, engine.url,
+            )
+        self.engine = engine
 
     # ── User Profile CRUD ─────────────────────────────────────────────────────
 
     def get_profile(self, user_id: str) -> Optional[UserProfile]:
-        with Session(self.engine) as session:
+        with SessionLocal() as session:
             orm = session.get(UserProfileORM, user_id)
             if not orm:
                 return None
             return UserProfile.from_orm_model(orm)
 
     def upsert_profile(self, profile: UserProfile) -> UserProfile:
-        with Session(self.engine) as session:
+        with SessionLocal() as session:
             existing = session.get(UserProfileORM, profile.user_id)
             data = profile.to_orm_dict()
             if existing:
@@ -53,7 +65,7 @@ class ProfileStore:
         return self.get_profile(profile.user_id)
 
     def delete_profile(self, user_id: str) -> bool:
-        with Session(self.engine) as session:
+        with SessionLocal() as session:
             orm = session.get(UserProfileORM, user_id)
             if not orm:
                 return False
@@ -64,7 +76,7 @@ class ProfileStore:
     # ── Assessment History ────────────────────────────────────────────────────
 
     def save_assessment(self, result: AssessmentResult) -> AssessmentResult:
-        with Session(self.engine) as session:
+        with SessionLocal() as session:
             orm = AssessmentResultORM(
                 result_id=result.result_id,
                 user_id=result.user_id,
@@ -72,8 +84,8 @@ class ProfileStore:
                 condition=result.condition,
                 risk_probability=result.risk_probability,
                 risk_category=result.risk_category,
-                raw_result_json=json.dumps(result.raw_result) if result.raw_result else None,
-                lifestyle_inputs_json=json.dumps(result.lifestyle_inputs) if result.lifestyle_inputs else None,
+                raw_result=result.raw_result,           # JSONB on Postgres
+                lifestyle_inputs=result.lifestyle_inputs,
                 created_at=result.created_at,
             )
             session.add(orm)
@@ -83,7 +95,7 @@ class ProfileStore:
     def get_assessment_history(
         self, user_id: str, limit: int = 10
     ) -> List[AssessmentResult]:
-        with Session(self.engine) as session:
+        with SessionLocal() as session:
             rows = (
                 session.query(AssessmentResultORM)
                 .filter_by(user_id=user_id)
@@ -91,17 +103,17 @@ class ProfileStore:
                 .limit(limit)
                 .all()
             )
-            results = []
-            for r in rows:
-                results.append(AssessmentResult(
+            return [
+                AssessmentResult(
                     result_id=r.result_id,
                     user_id=r.user_id,
                     session_id=r.session_id,
                     condition=r.condition,
                     risk_probability=r.risk_probability,
                     risk_category=r.risk_category,
-                    raw_result=json.loads(r.raw_result_json) if r.raw_result_json else None,
-                    lifestyle_inputs=json.loads(r.lifestyle_inputs_json) if r.lifestyle_inputs_json else None,
+                    raw_result=r.raw_result,
+                    lifestyle_inputs=r.lifestyle_inputs,
                     created_at=r.created_at,
-                ))
-            return results
+                )
+                for r in rows
+            ]

@@ -16,8 +16,10 @@ export default function FloatingNav() {
     <nav style={{
       position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)',
       zIndex: 50, display: 'flex', alignItems: 'center', gap: 4,
-      background: 'var(--elan-ch-800)', borderRadius: 'var(--r-pill)',
-      padding: '8px 12px', boxShadow: 'var(--shadow-nav)',
+      background: 'var(--elan-primary-bg)',
+      borderRadius: 'var(--r-pill)',
+      padding: '8px 12px',
+      boxShadow: 'var(--shadow-nav), var(--glow-cream)',
     }} aria-label="Main navigation">
       {NAV.map(({ to, Icon, label }) => {
         const active = pathname === to || (to !== '/dashboard' && pathname.startsWith(to));
@@ -30,10 +32,16 @@ export default function FloatingNav() {
             style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
               padding: '8px 16px', borderRadius: 'var(--r-xl)',
-              background: active ? 'rgba(255,255,255,0.15)' : 'transparent',
-              color: active ? '#FFFFFF' : 'rgba(255,255,255,0.50)',
+              background: active ? 'rgba(20,17,13,0.10)' : 'transparent',
+              color: active ? 'var(--elan-primary-text)' : 'var(--elan-primary-muted)',
               transition: 'background var(--t-fast) var(--ease-out), color var(--t-fast)',
               minWidth: 64, minHeight: 44,
+            }}
+            onMouseEnter={e => {
+              if (!active) e.currentTarget.style.color = 'var(--elan-primary-text)';
+            }}
+            onMouseLeave={e => {
+              if (!active) e.currentTarget.style.color = 'var(--elan-primary-muted)';
             }}
           >
             <Icon size={20} strokeWidth={active ? 2.5 : 1.8} />
