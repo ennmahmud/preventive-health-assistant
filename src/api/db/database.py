@@ -27,6 +27,10 @@ _SQLITE_FALLBACK = f"sqlite:///{_PROJECT_ROOT / 'data' / 'elan.db'}"
 
 DATABASE_URL = os.getenv("DATABASE_URL", _SQLITE_FALLBACK)
 
+# Render (and some other hosts) issue postgres:// URLs; SQLAlchemy 2 requires postgresql://
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
 # Make sure the SQLite parent dir exists (no-op for Postgres URLs)
 if DATABASE_URL.startswith("sqlite"):
     (_PROJECT_ROOT / "data").mkdir(parents=True, exist_ok=True)
