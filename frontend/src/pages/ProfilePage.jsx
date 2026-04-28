@@ -1,180 +1,176 @@
-import { useState, useCallback } from 'react';
-import { Save, CheckCircle, Camera } from 'lucide-react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ChevronLeft, Check } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import styles from './ProfilePage.module.css';
+import ElanButton from '../components/ui/ElanButton';
+import ElanInput from '../components/ui/ElanInput';
+import FloatingNav from '../components/layout/FloatingNav';
 
 const GENDER_OPTIONS = [
+  { value: '',       label: 'Prefer not to say' },
   { value: 'male',   label: 'Male' },
   { value: 'female', label: 'Female' },
-  { value: 'other',  label: 'Non-binary / Other' },
-  { value: 'prefer_not', label: 'Prefer not to say' },
+  { value: 'other',  label: 'Other' },
 ];
+
+function Group({ title, children }) {
+  return (
+    <section style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <h2 style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--elan-ch-400)', margin: 0, paddingLeft: 4 }}>
+        {title}
+      </h2>
+      <div style={{ background: 'var(--elan-surface)', border: '1px solid var(--elan-border)', borderRadius: 'var(--r-lg)', overflow: 'hidden', boxShadow: 'var(--shadow-xs)' }}>
+        {children}
+      </div>
+    </section>
+  );
+}
+
+function InfoRow({ label, value }) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '13px 16px', borderBottom: '1px solid var(--elan-sep)' }}>
+      <span style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--elan-ch-800)' }}>{label}</span>
+      <span style={{ fontSize: '0.84rem', color: 'var(--elan-ch-400)', maxWidth: '55%', textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value || '—'}</span>
+    </div>
+  );
+}
 
 export default function ProfilePage() {
   const { user, updateProfile } = useAuth();
+  const navigate = useNavigate();
+
   const [form, setForm] = useState({
     name:   user?.name   || '',
-    email:  user?.email  || '',
     dob:    user?.dob    || '',
     gender: user?.gender || '',
     height: user?.height || '',
     weight: user?.weight || '',
   });
-  const [saved, setSaved] = useState(false);
-  const [errors, setErrors] = useState({});
+  const [loading, setLoading]   = useState(false);
+  const [saved,   setSaved]     = useState(false);
+  const [error,   setError]     = useState('');
 
-  const set = (field) => (e) => setForm(f => ({ ...f, [field]: e.target.value }));
+  const set = k => e => setForm(p => ({ ...p, [k]: e.target.value }));
 
-  const bmiVal = (() => {
-    const h = parseFloat(form.height) / 100;
+  const initials = user?.name
+    ? user.name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
+    : (user?.email?.[0] ?? '?').toUpperCase();
+
+  const bmi = (() => {
+    const h = parseFloat(form.height);
     const w = parseFloat(form.weight);
-    if (!h || !w || h <= 0) return null;
-    return (w / (h * h)).toFixed(1);
+    if (h > 0 && w > 0) return (w / ((h / 100) ** 2)).toFixed(1);
+    return null;
   })();
 
-  const bmiMeta = (b) => {
-    if (!b) return null;
-    const v = parseFloat(b);
-    if (v < 18.5) return { label: 'Underweight', color: '#007AFF' };
-    if (v < 25)   return { label: 'Healthy',     color: '#34C759' };
-    if (v < 30)   return { label: 'Overweight',  color: '#FF9500' };
-    return               { label: 'Obese',        color: '#FF3B30' };
-  };
-
-  const validate = () => {
-    const errs = {};
-    if (!form.name.trim()) errs.name = 'Name is required.';
-    if (!form.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) errs.email = 'Enter a valid email.';
-    return errs;
-  };
-
-  const [saving, setSaving] = useState(false);
-
-  const handleSave = useCallback(async (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
-    const errs = validate();
-    if (Object.keys(errs).length) { setErrors(errs); return; }
-    setErrors({});
-    setSaving(true);
+    setError(''); setLoading(true);
     try {
-      await updateProfile(form);
+      const updates = {};
+      Object.entries(form).forEach(([k, v]) => { if (v !== '') updates[k] = v; });
+      await updateProfile(updates);
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } catch (err) {
-      setErrors({ save: err?.response?.data?.detail || 'Failed to save. Please try again.' });
+      setError(err.response?.data?.detail || 'Failed to save profile.');
     } finally {
-      setSaving(false);
+      setLoading(false);
     }
-  }, [form, updateProfile]);
+  };
 
-  const bmiInfo = bmiMeta(bmiVal);
+  const selectStyle = {
+    height: 48, width: '100%', padding: '0 12px',
+    background: '#fff', border: '1.5px solid var(--elan-ch-200)',
+    borderRadius: 'var(--r-md)', color: 'var(--elan-ch-800)',
+    fontSize: '0.9375rem', outline: 'none', appearance: 'none',
+    transition: 'border-color var(--t-fast)',
+  };
 
   return (
-    <div className={styles.page}>
-      <header className={styles.pageHeader}>
-        <h1 className={styles.pageTitle}>Profile</h1>
-        <p className={styles.pageSub}>Manage your personal information and health metrics.</p>
-      </header>
-
-      {/* Avatar hero */}
-      <div className={styles.avatarSection}>
-        <div className={styles.avatarWrap}>
-          <div className={styles.avatar}>{user?.avatarInitials || '?'}</div>
-          <button className={styles.avatarEditBtn} aria-label="Change photo" disabled>
-            <Camera size={14} strokeWidth={2} />
-          </button>
-        </div>
-        <div className={styles.avatarInfo}>
-          <div className={styles.avatarName}>{user?.name || 'Your Name'}</div>
-          <div className={styles.avatarEmail}>{user?.email || ''}</div>
-          {user?.createdAt && (
-            <div className={styles.avatarSince}>
-              Member since {new Date(user.createdAt).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}
-            </div>
-          )}
-        </div>
+    <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: 'var(--elan-bg)' }}>
+      {/* Header */}
+      <div style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, borderBottom: '1px solid var(--elan-sep)' }}>
+        <button onClick={() => navigate(-1)} style={{ background: 'none', color: 'var(--elan-ch-500)', display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.875rem', cursor: 'pointer' }}>
+          <ChevronLeft size={18} />
+        </button>
+        <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--elan-ch-800)' }}>Profile</span>
       </div>
 
-      <form className={styles.form} onSubmit={handleSave} noValidate>
-        {/* Personal info */}
-        <FieldGroup title="Personal Information">
-          <Field id="prof-name" label="Full name" required error={errors.name}>
-            <input className={`${styles.input} ${errors.name ? styles.inputError : ''}`} id="prof-name" type="text" value={form.name} onChange={set('name')} placeholder="Jane Doe" autoComplete="name" />
-          </Field>
-          <Field id="prof-email" label="Email address" required error={errors.email}>
-            <input className={`${styles.input} ${errors.email ? styles.inputError : ''}`} id="prof-email" type="email" value={form.email} onChange={set('email')} placeholder="jane@example.com" autoComplete="email" />
-          </Field>
-          <Field id="prof-dob" label="Date of birth">
-            <input className={styles.input} id="prof-dob" type="date" value={form.dob} onChange={set('dob')} max={new Date().toISOString().split('T')[0]} />
-          </Field>
-          <Field id="prof-gender" label="Biological sex">
-            <select className={styles.input} id="prof-gender" value={form.gender} onChange={set('gender')}>
-              <option value="">Select…</option>
-              {GENDER_OPTIONS.map(g => <option key={g.value} value={g.value}>{g.label}</option>)}
-            </select>
-          </Field>
-        </FieldGroup>
-
-        {/* Body metrics */}
-        <FieldGroup title="Body Metrics">
-          <div className={styles.metricRow}>
-            <Field id="prof-height" label="Height (cm)">
-              <input className={styles.input} id="prof-height" type="number" min="50" max="300" value={form.height} onChange={set('height')} placeholder="170" />
-            </Field>
-            <Field id="prof-weight" label="Weight (kg)">
-              <input className={styles.input} id="prof-weight" type="number" min="20" max="500" value={form.weight} onChange={set('weight')} placeholder="70" />
-            </Field>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '24px 20px 120px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+        {/* Avatar */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+          <div style={{
+            width: 72, height: 72, borderRadius: '50%',
+            background: 'var(--elan-ch-800)', color: '#fff',
+            fontFamily: 'var(--elan-serif)', fontSize: '1.6rem',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            {initials}
           </div>
-
-          {bmiVal && bmiInfo && (
-            <div className={styles.bmiCard} style={{ borderColor: `${bmiInfo.color}30`, background: `${bmiInfo.color}08` }}>
-              <div className={styles.bmiLeft}>
-                <div className={styles.bmiTitle}>BMI</div>
-                <div className={styles.bmiValue} style={{ color: bmiInfo.color }}>{bmiVal}</div>
-              </div>
-              <div>
-                <div className={styles.bmiCat} style={{ color: bmiInfo.color, background: `${bmiInfo.color}18` }}>{bmiInfo.label}</div>
-                <div className={styles.bmiHint}>Body Mass Index based on height and weight.</div>
-              </div>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontFamily: 'var(--elan-serif)', fontSize: '1.2rem', color: 'var(--elan-ch-800)' }}>
+              {user?.name || 'Your Name'}
             </div>
-          )}
-        </FieldGroup>
-
-        <div className={styles.saveRow}>
-          <button
-            className={`${styles.saveBtn} ${saved ? styles.saveBtnDone : ''}`}
-            type="submit"
-            disabled={saving}
-          >
-            {saved
-              ? <><CheckCircle size={16} strokeWidth={2.5} /> Saved</>
-              : saving
-              ? 'Saving…'
-              : <><Save size={16} strokeWidth={2} /> Save Changes</>}
-          </button>
+            <div style={{ fontSize: '0.8rem', color: 'var(--elan-ch-400)', marginTop: 2 }}>{user?.email}</div>
+          </div>
         </div>
-      </form>
-    </div>
-  );
-}
 
-function FieldGroup({ title, children }) {
-  return (
-    <section className={styles.group}>
-      <h2 className={styles.groupTitle}>{title}</h2>
-      <div className={styles.groupCard}>{children}</div>
-    </section>
-  );
-}
+        {/* Account info (read-only) */}
+        <Group title="Account">
+          <InfoRow label="Email"        value={user?.email} />
+          <InfoRow label="Member since" value={user?.created_at ? new Date(user.created_at).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }) : ''} />
+          <div style={{ padding: '13px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--elan-ch-800)' }}>BMI</span>
+            <span style={{ fontSize: '0.84rem', color: bmi ? 'var(--elan-ch-600)' : 'var(--elan-ch-300)', fontFamily: bmi ? 'var(--elan-serif)' : 'inherit' }}>
+              {bmi || 'Fill height & weight'}
+            </span>
+          </div>
+        </Group>
 
-function Field({ id, label, required, error, children }) {
-  return (
-    <div className={styles.field}>
-      <label className={styles.label} htmlFor={id}>
-        {label}{required && <span className={styles.required}> *</span>}
-      </label>
-      {children}
-      {error && <span className={styles.fieldError} role="alert">{error}</span>}
+        {/* Editable fields */}
+        <form onSubmit={handleSave} noValidate>
+          <Group title="Personal Details">
+            <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {error && (
+                <p role="alert" style={{ fontSize: '0.82rem', color: 'var(--elan-tc-500)', padding: '10px 14px', background: 'var(--elan-tc-50)', borderRadius: 'var(--r-sm)', border: '1px solid var(--elan-tc-100)', margin: 0 }}>
+                  {error}
+                </p>
+              )}
+
+              <ElanInput id="name" label="Full name" type="text" value={form.name} onChange={set('name')} autoComplete="name" />
+              <ElanInput id="dob"  label="Date of birth" type="date" value={form.dob}  onChange={set('dob')} />
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--elan-ch-600)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                  Sex
+                </label>
+                <select value={form.gender} onChange={set('gender')} style={selectStyle}>
+                  {GENDER_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', gap: 12 }}>
+                <div style={{ flex: 1 }}>
+                  <ElanInput id="height" label="Height (cm)" type="number" value={form.height} onChange={set('height')} placeholder="170" />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <ElanInput id="weight" label="Weight (kg)" type="number" value={form.weight} onChange={set('weight')} placeholder="70" />
+                </div>
+              </div>
+
+              <ElanButton
+                type="submit" loading={loading} fullWidth
+                style={saved ? { background: 'var(--elan-sg-600)' } : {}}
+              >
+                {saved ? <><Check size={16} /> Saved</> : 'Save Changes'}
+              </ElanButton>
+            </div>
+          </Group>
+        </form>
+      </div>
+
+      <FloatingNav />
     </div>
   );
 }

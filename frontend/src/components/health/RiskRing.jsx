@@ -38,10 +38,16 @@ export default function RiskRing({ probability = 0, risk_level = 'low', conditio
           flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
         }}>
           <span style={{
-            fontFamily: 'var(--elan-serif)', fontSize: size < 100 ? '1.4rem' : '1.8rem',
+            fontFamily: 'var(--elan-serif)',
+            fontSize: size < 100 ? '1.6rem' : size < 140 ? '2rem' : '2.4rem',
+            fontWeight: 400,
             color: color, lineHeight: 1,
           }}>{pct}%</span>
-          <span style={{ fontSize: '0.62rem', color: 'var(--elan-ch-400)', marginTop: 2 }}>risk</span>
+          <span style={{
+            fontSize: size < 100 ? '0.62rem' : '0.75rem',
+            color: 'var(--elan-ch-500)', marginTop: 4,
+            textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600,
+          }}>risk</span>
         </div>
       </div>
       {condition && (

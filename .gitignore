@@ -48,3 +48,10 @@ preventive-health-assistant.zip
 # Misc
 __MACOSX/
 data/users.db
+data/elan.db
+data/profiles/
+backend_schema.json
+
+# Runtime / local tooling
+.claude/
+frontend/.vite/

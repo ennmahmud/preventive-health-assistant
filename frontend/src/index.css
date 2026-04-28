@@ -4,68 +4,97 @@
 @import '@fontsource/plus-jakarta-sans/600.css';
 @import '@fontsource/plus-jakarta-sans/700.css';
 
-/* ─── Élan Design Tokens ──────────────────────────────────────── */
+/* ─── Élan — Premium clinical palette (LIGHT default + DARK override) ───
+   All component styles read from semantic tokens. The token VALUES change
+   per theme; component code never needs to branch on light/dark.
+   To toggle: set [data-theme="dark"] on <html>. */
+
 :root {
-  /* Warm Charcoal scale */
-  --elan-ch-800: #2C2B28;
-  --elan-ch-700: #3D3B36;
-  --elan-ch-600: #524F48;
-  --elan-ch-500: #6B685F;
-  --elan-ch-400: #8C8980;
-  --elan-ch-300: #B3B0A8;
-  --elan-ch-200: #D4D2CC;
-  --elan-ch-100: #ECEAE5;
-  --elan-ch-50:  #F6F5F2;
+  /* Warm Charcoal scale — DARK ink on LIGHT canvas */
+  --elan-ch-800: #2C2B28;   /* primary text — warm charcoal */
+  --elan-ch-700: #3D3B36;   /* high-contrast headings */
+  --elan-ch-600: #5A574F;   /* body copy */
+  --elan-ch-500: #7A7669;   /* secondary copy */
+  --elan-ch-400: #A39F94;   /* muted captions */
+  --elan-ch-300: #C4BFB4;   /* hairlines, dividers strong */
+  --elan-ch-200: #DBD6CB;   /* input borders / chips */
+  --elan-ch-100: #ECE7DC;   /* elevated subtle surfaces */
+  --elan-ch-50:  #F5F1E5;   /* very subtle warm fills */
 
   /* Sage (Low risk) */
-  --elan-sg-700: #2D5C30;
-  --elan-sg-600: #4A7244;
-  --elan-sg-500: #5E8D58;
-  --elan-sg-200: #C8DECC;
-  --elan-sg-100: #E8F2E9;
-  --elan-sg-50:  #F3F9F3;
+  --elan-sg-700: #4F8A4D;
+  --elan-sg-600: #6BAE65;
+  --elan-sg-500: #82C57C;
+  --elan-sg-200: #BCDFBC;
+  --elan-sg-100: #DCEEDC;
+  --elan-sg-50:  #EEF7EE;
 
   /* Amber (Moderate risk) */
-  --elan-am-700: #8A6620;
-  --elan-am-500: #B8872E;
-  --elan-am-400: #C4963C;
-  --elan-am-200: #E9D5A8;
-  --elan-am-100: #F5EACE;
-  --elan-am-50:  #FAF5E8;
+  --elan-am-700: #C4951F;
+  --elan-am-500: #E0AE36;
+  --elan-am-400: #F0BE48;
+  --elan-am-200: #F5DFA2;
+  --elan-am-100: #FBEFCE;
+  --elan-am-50:  #FDF7E6;
 
   /* Terracotta (High risk) */
-  --elan-tc-700: #8F3020;
-  --elan-tc-500: #B34430;
-  --elan-tc-400: #CC5840;
-  --elan-tc-200: #EEBA9E;
-  --elan-tc-100: #F8DDD5;
-  --elan-tc-50:  #FCF0EB;
+  --elan-tc-700: #C44A36;
+  --elan-tc-500: #E55E47;
+  --elan-tc-400: #F47358;
+  --elan-tc-200: #F4C7BC;
+  --elan-tc-100: #FADFD7;
+  --elan-tc-50:  #FCEEE9;
 
-  /* Background & surface */
-  --elan-bg:      #F9F8F5;
-  --elan-surface: #FFFFFF;
-  --elan-border:  rgba(44,43,40,0.10);
-  --elan-sep:     rgba(44,43,40,0.07);
+  /* Background & surface — warm-cream canvas */
+  --elan-bg:        #FAF7F0;     /* page canvas (warm off-white) */
+  --elan-surface:   #FFFFFF;     /* cards, primary surface */
+  --elan-surface-2: #FBF9F4;     /* elevated/hover surface */
+  --elan-border:    rgba(44,43,40,0.10);
+  --elan-sep:       rgba(44,43,40,0.06);
+
+  /* PRIMARY action surface (dark pill on light canvas in light mode).
+     Used by FloatingNav, brand CTAs, send button, badges, etc. */
+  --elan-primary-bg:        #2C2B28;
+  --elan-primary-bg-hover:  #14110D;
+  --elan-primary-text:      #F2EDE3;
+  --elan-primary-muted:     rgba(242,237,227,0.65);
+
+  /* Hero accent gradients */
+  --elan-grad-hero:  linear-gradient(135deg, #2C2B28 0%, #14110D 100%);
+  --elan-grad-sage:  linear-gradient(135deg, #6BAE65 0%, #4F8A4D 100%);
+  --elan-grad-amber: linear-gradient(135deg, #F0BE48 0%, #C4951F 100%);
+  --elan-grad-terra: linear-gradient(135deg, #F47358 0%, #C44A36 100%);
+  --elan-grad-glass: linear-gradient(180deg, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.30) 100%);
 
   /* Typography */
   --elan-serif: 'DM Serif Display', Georgia, serif;
   --elan-sans:  'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --elan-mono:  ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, monospace;
 
   /* Spacing scale (4pt) */
   --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px;
   --sp-5:20px; --sp-6:24px; --sp-8:32px; --sp-10:40px;
   --sp-12:48px; --sp-16:64px;
 
+  /* Layout — desktop side padding + max content width */
+  --page-max:  720px;
+  --page-pad:  20px;
+  --page-pad-desktop: 48px;
+
   /* Radius */
   --r-xs:6px; --r-sm:10px; --r-md:14px; --r-lg:20px;
   --r-xl:28px; --r-pill:999px;
 
-  /* Shadows */
-  --shadow-xs: 0 1px 3px rgba(44,43,40,0.08),0 1px 2px rgba(44,43,40,0.06);
-  --shadow-sm: 0 2px 8px rgba(44,43,40,0.10),0 1px 3px rgba(44,43,40,0.07);
-  --shadow-md: 0 4px 16px rgba(44,43,40,0.12),0 2px 6px rgba(44,43,40,0.08);
-  --shadow-lg: 0 8px 32px rgba(44,43,40,0.14),0 4px 12px rgba(44,43,40,0.10);
-  --shadow-nav: 0 8px 32px rgba(44,43,40,0.40);
+  /* Shadows — light mode: soft warm drops */
+  --shadow-xs: 0 1px 2px rgba(44,43,40,0.05), 0 0 0 1px rgba(44,43,40,0.03);
+  --shadow-sm: 0 4px 12px rgba(44,43,40,0.06), 0 0 0 1px rgba(44,43,40,0.04);
+  --shadow-md: 0 10px 30px rgba(44,43,40,0.08), 0 2px 8px rgba(44,43,40,0.05);
+  --shadow-lg: 0 24px 60px rgba(44,43,40,0.12), 0 8px 20px rgba(44,43,40,0.08);
+  --shadow-nav: 0 18px 50px rgba(44,43,40,0.18), 0 4px 12px rgba(44,43,40,0.10), 0 0 0 1px rgba(44,43,40,0.06);
+  --glow-sage:   0 0 24px rgba(107,174,101,0.18);
+  --glow-amber:  0 0 24px rgba(240,190,72,0.20);
+  --glow-terra:  0 0 24px rgba(244,115,88,0.18);
+  --glow-cream:  0 0 24px rgba(44,43,40,0.08);
 
   /* Animation */
   --t-fast:120ms; --t-base:200ms; --t-slow:350ms;
@@ -74,16 +103,108 @@
   --ease-in:cubic-bezier(0.7,0,0.84,0);
 
   /* Semantic aliases */
-  --color-text:       var(--elan-ch-800);
-  --color-text-muted: var(--elan-ch-400);
-  --color-bg:         var(--elan-bg);
-  --color-surface:    var(--elan-surface);
-  --color-border:     var(--elan-border);
-  --color-accent:     var(--elan-ch-800);
-  --color-low:        var(--elan-sg-600);
-  --color-moderate:   var(--elan-am-400);
-  --color-high:       var(--elan-tc-400);
-  --color-very-high:  var(--elan-ch-800);
+  --color-text:         var(--elan-ch-800);
+  --color-text-muted:   var(--elan-ch-500);
+  --color-bg:           var(--elan-bg);
+  --color-surface:      var(--elan-surface);
+  --color-border:       var(--elan-border);
+  --color-separator:    var(--elan-sep);
+  --color-accent:       var(--elan-primary-bg);
+  --color-accent-hover: var(--elan-primary-bg-hover);
+  --color-low:          var(--elan-sg-600);
+  --color-moderate:     var(--elan-am-500);
+  --color-high:         var(--elan-tc-500);
+  --color-very-high:    var(--elan-tc-700);
+
+  /* Legacy radius aliases */
+  --radius-xs:   var(--r-xs);
+  --radius-sm:   var(--r-sm);
+  --radius:      var(--r-md);
+  --radius-lg:   var(--r-lg);
+  --radius-xl:   var(--r-xl);
+  --radius-pill: var(--r-pill);
+
+  /* Legacy shadow aliases */
+  --shadow:      var(--shadow-sm);
+  --shadow-glow: 0 0 0 3px rgba(44,43,40,0.08);
+
+  /* Legacy Apple-palette aliases */
+  --apple-gray-5: var(--elan-ch-100);
+  --apple-gray-6: var(--elan-ch-50);
+  --apple-red:    var(--elan-tc-500);
+  --apple-green:  var(--elan-sg-500);
+  --apple-blue:   var(--elan-primary-bg);
+
+  /* Body ambient gradient — barely-there warm wash */
+  --body-ambient:
+    radial-gradient(ellipse 90% 60% at 50% -10%, rgba(240,190,72,0.10) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 50% at 100% 100%, rgba(107,174,101,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 50% at 0% 100%, rgba(244,115,88,0.05) 0%, transparent 60%);
+}
+
+/* ─── DARK theme override ─────────────────────────────────────────── */
+[data-theme="dark"] {
+  /* Inverted ch-* scale — warm cream text on warm-black */
+  --elan-ch-800: #F2EDE3;
+  --elan-ch-700: #DAD3C4;
+  --elan-ch-600: #B6AE9E;
+  --elan-ch-500: #8B8374;
+  --elan-ch-400: #6E6759;
+  --elan-ch-300: #524C42;
+  --elan-ch-200: #3A352D;
+  --elan-ch-100: #25211B;
+  --elan-ch-50:  #1A1714;
+
+  /* Sage tints darken for dark mode */
+  --elan-sg-200: #2A4A2C;
+  --elan-sg-100: #1E3320;
+  --elan-sg-50:  #16241A;
+
+  /* Amber tints darken */
+  --elan-am-200: #4A3B1A;
+  --elan-am-100: #332910;
+  --elan-am-50:  #241D0C;
+
+  /* Terra tints darken */
+  --elan-tc-200: #4D241B;
+  --elan-tc-100: #341811;
+  --elan-tc-50:  #24110D;
+
+  /* Canvas */
+  --elan-bg:        #0B0907;
+  --elan-surface:   #14110D;
+  --elan-surface-2: #1B1813;
+  --elan-border:    rgba(242,237,227,0.08);
+  --elan-sep:       rgba(242,237,227,0.05);
+
+  /* Primary action surface flips: cream pill on dark canvas */
+  --elan-primary-bg:        #F2EDE3;
+  --elan-primary-bg-hover:  #FFFAF0;
+  --elan-primary-text:      #14110D;
+  --elan-primary-muted:     rgba(20,17,13,0.55);
+
+  /* Hero gradient swaps direction */
+  --elan-grad-hero:  linear-gradient(135deg, #F2EDE3 0%, #DAD3C4 100%);
+  --elan-grad-glass: linear-gradient(180deg, rgba(242,237,227,0.04) 0%, rgba(242,237,227,0.01) 100%);
+
+  /* Shadows — deeper drops + warm hairline */
+  --shadow-xs: 0 1px 2px rgba(0,0,0,0.45), 0 0 0 1px rgba(242,237,227,0.03);
+  --shadow-sm: 0 4px 12px rgba(0,0,0,0.50), 0 0 0 1px rgba(242,237,227,0.04);
+  --shadow-md: 0 10px 30px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.40);
+  --shadow-lg: 0 24px 60px rgba(0,0,0,0.65), 0 8px 20px rgba(0,0,0,0.45);
+  --shadow-nav: 0 18px 50px rgba(0,0,0,0.70), 0 4px 12px rgba(0,0,0,0.45), 0 0 0 1px rgba(242,237,227,0.06);
+  --glow-sage:   0 0 24px rgba(107,174,101,0.25);
+  --glow-amber:  0 0 24px rgba(240,190,72,0.25);
+  --glow-terra:  0 0 24px rgba(244,115,88,0.25);
+  --glow-cream:  0 0 24px rgba(242,237,227,0.10);
+
+  --shadow-glow: 0 0 0 3px rgba(242,237,227,0.08);
+
+  /* Body ambient — slightly stronger to lift the deep canvas */
+  --body-ambient:
+    radial-gradient(ellipse 90% 60% at 50% -10%, rgba(240,190,72,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 50% at 100% 100%, rgba(107,174,101,0.05) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 50% at 0% 100%, rgba(244,115,88,0.04) 0%, transparent 60%);
 }
 
 /* ─── Reset ────────────────────────────────────────────────────── */
@@ -98,6 +219,14 @@ html, body, #root {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  transition: background-color var(--t-base) var(--ease-out),
+              color var(--t-base) var(--ease-out);
+}
+
+body {
+  background: var(--body-ambient), var(--elan-bg);
+  background-attachment: fixed;
 }
 
 a { color: inherit; text-decoration: none; }
@@ -105,18 +234,73 @@ a { color: inherit; text-decoration: none; }
 button, [role="button"] {
   cursor: pointer; border: none; outline: none;
   font-family: inherit; font-size: inherit;
+  color: inherit; background: transparent;
 }
 
-input, textarea, select { font-family: inherit; font-size: inherit; }
+input, textarea, select {
+  font-family: inherit; font-size: inherit;
+  color: var(--elan-ch-800);
+}
+input::placeholder, textarea::placeholder {
+  color: var(--elan-ch-400);
+}
 
 :focus-visible {
-  outline: 2px solid var(--elan-ch-800);
+  outline: 2px solid var(--elan-primary-bg);
   outline-offset: 2px;
   border-radius: var(--r-xs);
 }
 
-::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--elan-ch-200); border-radius: var(--r-pill); }
+::-webkit-scrollbar-thumb {
+  background: var(--elan-ch-200);
+  border-radius: var(--r-pill);
+  transition: background var(--t-fast);
+}
 ::-webkit-scrollbar-thumb:hover { background: var(--elan-ch-300); }
-::selection { background: rgba(44,43,40,0.12); color: var(--elan-ch-800); }
+::selection { background: rgba(44,43,40,0.18); color: var(--elan-ch-800); }
+[data-theme="dark"] ::selection { background: rgba(242,237,227,0.20); color: var(--elan-ch-800); }
+
+/* ─── Layout helpers ───────────────────────────────────────────── */
+/* .elan-page-wrap: applies max-width and side padding so pages don't
+   stretch full-bleed on desktop. Used by pages that need centered content. */
+.elan-page-wrap {
+  width: 100%;
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding-left: var(--page-pad);
+  padding-right: var(--page-pad);
+}
+@media (min-width: 768px) {
+  .elan-page-wrap {
+    padding-left: var(--page-pad-desktop);
+    padding-right: var(--page-pad-desktop);
+  }
+}
+
+/* ─── Utility animations used across the app ───────────────────── */
+@keyframes elan-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes elan-slide-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes elan-pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(107,174,101,0.45); }
+  50%      { box-shadow: 0 0 0 8px rgba(107,174,101,0); }
+}
+@keyframes elan-bounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+  40%           { transform: translateY(-5px); opacity: 1; }
+}
+@keyframes elan-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes elan-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}

@@ -65,14 +65,17 @@ _PROVIDE_METRIC_PATTERNS = re.compile(
 )
 
 _RESULT_PATTERNS = re.compile(
-    r"\b(what does (it|that|this|the result) mean|explain|interpret|understand|tell me more"
-    r"|what is (my|the) (risk|score|result|probability|chance))\b",
+    r"\b(what does (it|that|this|my|the) (mean|result|score|number|percentage)|explain|interpret|understand|tell me more"
+    r"|what is (my|the) (risk|score|result|probability|chance)"
+    r"|what (does|did) (it|that|this) mean)\b",
     re.IGNORECASE,
 )
 
 _RECOMMENDATION_PATTERNS = re.compile(
     r"\b(what (should|can|do) i|how (can|do) i|advice|recommend|suggest|tip|improve|lower|reduce"
-    r"|prevent|lifestyle|what (to|should) do|help me)\b",
+    r"|prevent|lifestyle|what (to|should) do|help me|most impactful|most important|best thing"
+    r"|biggest (change|difference|impact)|single (best|most|change)|make.*difference"
+    r"|what.*i (can|should|could).*(do|change|try|focus))\b",
     re.IGNORECASE,
 )
 
@@ -111,17 +114,19 @@ def classify_intent(message: str) -> Intent:
     if _CVD_PATTERNS.search(msg):
         return Intent("assess_cvd", 0.90 if has_assess else 0.70)
 
-    # --- Generic "check my health" → ask which condition ---
-    if has_assess:
-        return Intent("assess_unknown", 0.60)
-
-    # --- Result / explanation ---
+    # --- Result / explanation (checked before generic assess fallback so
+    #     "explain my result" / "what does this mean" don't fall through) ---
     if _RESULT_PATTERNS.search(msg):
         return Intent("ask_about_result", 0.85)
 
-    # --- Recommendations ---
+    # --- Recommendations (checked before generic assess fallback so
+    #     "lower my risk" / "reduce my risk" route here, not assess_unknown) ---
     if _RECOMMENDATION_PATTERNS.search(msg):
         return Intent("ask_for_recommendation", 0.85)
+
+    # --- Generic "check my health" → ask which condition ---
+    if has_assess:
+        return Intent("assess_unknown", 0.60)
 
     # --- Providing a metric mid-conversation ---
     if _PROVIDE_METRIC_PATTERNS.search(msg):

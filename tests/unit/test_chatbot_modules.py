@@ -83,8 +83,9 @@ class TestIntentClassifier:
     def test_generic_health_check_is_unknown_assess(self):
         assert classify_intent("check my health").name == "assess_unknown"
 
-    def test_check_my_risk_is_unknown_assess(self):
-        assert classify_intent("what is my risk?").name == "assess_unknown"
+    def test_what_is_my_risk_is_ask_about_result(self):
+        # "what is my risk?" asks about an existing result, not to start a new assessment
+        assert classify_intent("what is my risk?").name == "ask_about_result"
 
     # ── Result / recommendation ──
     def test_what_does_that_mean(self):

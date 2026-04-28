@@ -2,7 +2,27 @@
 
 const BASE = '/api/v1';
 
+/* Attach the user's JWT (or fall back to no auth in dev) to every request. */
+function authHeaders(extra = {}) {
+  const headers = { ...extra };
+  try {
+    const token = localStorage.getItem('elan_token');
+    if (token) headers.Authorization = `Bearer ${token}`;
+  } catch { /* localStorage unavailable (SSR / private mode) — skip */ }
+  return headers;
+}
+
 async function handleResponse(res) {
+  if (res.status === 401) {
+    // Token expired / missing — bounce to sign-in just like the axios client does.
+    try {
+      localStorage.removeItem('elan_token');
+      localStorage.removeItem('elan_user');
+    } catch { /* ignore */ }
+    if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/signin')) {
+      window.location.href = '/signin';
+    }
+  }
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.detail || `HTTP ${res.status}`);
@@ -16,7 +36,7 @@ async function handleResponse(res) {
 export async function sendChatMessage(message, sessionId = null, userId = null, assessmentContext = null) {
   const res = await fetch(`${BASE}/chat`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({
       message,
       session_id: sessionId,
@@ -28,33 +48,41 @@ export async function sendChatMessage(message, sessionId = null, userId = null, 
 }
 
 export async function deleteSession(sessionId) {
-  const res = await fetch(`${BASE}/chat/session/${sessionId}`, { method: 'DELETE' });
+  const res = await fetch(`${BASE}/chat/session/${sessionId}`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  });
   return handleResponse(res);
 }
 
 // ── Profile ───────────────────────────────────────────────────────────────────
 
 export async function getUserProfile(userId) {
-  const res = await fetch(`${BASE}/profile/${userId}`);
+  const res = await fetch(`${BASE}/profile/${userId}`, { headers: authHeaders() });
   return handleResponse(res);
 }
 
 export async function upsertUserProfile(userId, profileData) {
   const res = await fetch(`${BASE}/profile`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ user_id: userId, ...profileData }),
   });
   return handleResponse(res);
 }
 
 export async function deleteUserProfile(userId) {
-  const res = await fetch(`${BASE}/profile/${userId}`, { method: 'DELETE' });
+  const res = await fetch(`${BASE}/profile/${userId}`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  });
   return handleResponse(res);
 }
 
 export async function getAssessmentHistory(userId, limit = 20) {
-  const res = await fetch(`${BASE}/profile/${userId}/history?limit=${limit}`);
+  const res = await fetch(`${BASE}/profile/${userId}/history?limit=${limit}`, {
+    headers: authHeaders(),
+  });
   return handleResponse(res);
 }
 
@@ -69,14 +97,16 @@ export async function getAllConditionsTrend(userId) {
 export async function runStructuredAssessment(payload) {
   const res = await fetch(`${BASE}/assessment`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(payload),
   });
   return handleResponse(res);
 }
 
 export async function getAssessmentQuestions(condition) {
-  const res = await fetch(`${BASE}/assessment/questions/${condition}`);
+  const res = await fetch(`${BASE}/assessment/questions/${condition}`, {
+    headers: authHeaders(),
+  });
   return handleResponse(res);
 }
 
@@ -84,7 +114,7 @@ export async function getAssessmentQuestions(condition) {
 export async function simulateWhatIf(condition, baselineAnswers, changes, userId = null) {
   const res = await fetch(`${BASE}/assessment/simulate`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({
       condition,
       baseline_answers: baselineAnswers,
@@ -101,13 +131,13 @@ export async function simulateWhatIf(condition, baselineAnswers, changes, userId
 export async function getCohortComparison(condition, age, gender, userRisk = null) {
   let url = `${BASE}/assessment/cohort?condition=${condition}&age=${age}&gender=${gender}`;
   if (userRisk !== null) url += `&user_risk=${userRisk}`;
-  const res = await fetch(url);
+  const res = await fetch(url, { headers: authHeaders() });
   return handleResponse(res);
 }
 
 // ── Model Info ────────────────────────────────────────────────────────────────
 
 export async function getDiabetesModelInfo() {
-  const res = await fetch(`${BASE}/health/diabetes/model-info`);
+  const res = await fetch(`${BASE}/health/diabetes/model-info`, { headers: authHeaders() });
   return handleResponse(res);
 }

@@ -1,5 +1,25 @@
 services:
 
+  # ── Database (Postgres 16 + pgvector) ────────────────────────────────────────
+  db:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-elan}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-elan_dev_pw}
+      POSTGRES_DB: ${POSTGRES_DB:-elan}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      # Expose locally for DB tools (psql, DBeaver). Remove in prod.
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-elan} -d ${POSTGRES_DB:-elan}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
   # ── Backend (FastAPI) ────────────────────────────────────────────────────────
   backend:
     build:
@@ -11,14 +31,15 @@ services:
     environment:
       # Defaults — override in .env
       - DEBUG=false
+      - DATABASE_URL=${DATABASE_URL:-postgresql+psycopg://elan:elan_dev_pw@db:5432/elan}
     volumes:
-      # Persistent data (SQLite user DB + assessment profiles)
-      - ./data/users.db:/app/data/users.db
-      - ./data/profiles:/app/data/profiles
       # Trained models (mount from host — avoids re-training inside container)
       - ./models/saved:/app/models/saved:ro
     ports:
       - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "python", "-c",
              "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health/status')"]
@@ -47,20 +68,22 @@ services:
       context: .
       dockerfile: Dockerfile
     command: >
-      uvicorn src.api.main:app
-        --host 0.0.0.0
-        --port 8000
-        --reload
+      sh -c "alembic upgrade head &&
+             uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --reload"
     env_file:
       - .env
     environment:
       - DEBUG=true
+      - DATABASE_URL=${DATABASE_URL:-postgresql+psycopg://elan:elan_dev_pw@db:5432/elan}
     volumes:
       - .:/app
       - /app/venv          # exclude host venv from bind-mount
       - /app/__pycache__
     ports:
       - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
 
   frontend-dev:
     profiles: [dev]
@@ -76,3 +99,6 @@ services:
       - VITE_API_URL=http://backend-dev:8000
     depends_on:
       - backend-dev
+
+volumes:
+  pgdata:

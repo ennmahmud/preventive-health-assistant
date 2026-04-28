@@ -27,7 +27,7 @@ export default function ElanInput({
           style={{
             height: 48, width: '100%',
             padding: isPassword ? '0 44px 0 16px' : '0 16px',
-            background: '#fff',
+            background: 'var(--elan-surface)',
             border: `1.5px solid ${error ? 'var(--elan-tc-400)' : 'var(--elan-ch-200)'}`,
             borderRadius: 'var(--r-md)',
             color: 'var(--elan-ch-800)', fontSize: '0.9375rem',

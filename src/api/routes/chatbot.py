@@ -58,6 +58,7 @@ async def chat(request: ChatRequest):
             session_id=request.session_id,
             message=request.message,
             user_id=request.user_id,
+            assessment_context=request.assessment_context,
         )
     except Exception as e:
         logger.error("Chat handler error: %s", e, exc_info=True)

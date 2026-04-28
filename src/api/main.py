@@ -9,11 +9,20 @@ from pathlib import Path
 from contextlib import asynccontextmanager
 import logging
 
-from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+# ── Load .env BEFORE importing anything that reads env vars ──────────────────
+# Several modules (src.api.auth, src.chatbot.llm.claude_service, etc.) read
+# os.environ at import time, so dotenv must be loaded first or those values
+# will be silently None.
+_PROJECT_ROOT = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(_PROJECT_ROOT))
 
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+from dotenv import load_dotenv  # noqa: E402
+
+load_dotenv(_PROJECT_ROOT / ".env", override=False)
+
+from fastapi import FastAPI, Request  # noqa: E402
+from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
+from fastapi.responses import JSONResponse  # noqa: E402
 
 from config.settings import API_CONFIG
 from src.api.routes.auth import router as auth_router
@@ -49,12 +58,24 @@ async def lifespan(app: FastAPI):
     # === STARTUP ===
     logger.info("Starting Preventive Health Assistant API...")
 
-    # Initialise SQLite user store (creates data/users.db if it doesn't exist)
+    # Surface whether key env vars were picked up — makes config issues obvious.
+    import os as _os
+    _env_status = {
+        "API_KEY":           "set" if _os.getenv("API_KEY")           else "MISSING (open mode)",
+        "ELAN_SECRET_KEY":   "set" if _os.getenv("ELAN_SECRET_KEY")   else "MISSING (using dev fallback)",
+        "ANTHROPIC_API_KEY": "set" if _os.getenv("ANTHROPIC_API_KEY") else "MISSING (Claude disabled)",
+    }
+    for _k, _v in _env_status.items():
+        logger.info("  env  %-18s %s", _k, _v)
+
+    # Initialise the database. On Postgres this is just a CREATE EXTENSION
+    # vector + create_all that no-ops if Alembic has already run; on SQLite
+    # (local dev fallback) it creates data/elan.db on first boot.
     try:
         init_db()
-        logger.info("✓ User database initialised")
+        logger.info("✓ Database initialised")
     except Exception as e:
-        logger.error(f"✗ Failed to initialise user database: {e}")
+        logger.error(f"✗ Failed to initialise database: {e}")
 
     # Load the diabetes risk model
     try:

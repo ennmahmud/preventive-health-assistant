@@ -11,6 +11,12 @@ python-multipart>=0.0.6
 python-jose[cryptography]>=3.3.0
 bcrypt>=4.0.0
 
+# Database (Postgres + pgvector via SQLAlchemy)
+sqlalchemy>=2.0.0
+alembic>=1.12.0
+psycopg[binary]>=3.1.0
+pgvector>=0.2.5
+
 # ML runtime
 xgboost>=2.0.0
 numpy>=1.24.0
