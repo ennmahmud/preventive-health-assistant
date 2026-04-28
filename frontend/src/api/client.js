@@ -1,6 +1,10 @@
 import axios from 'axios';
 
-const client = axios.create({ baseURL: '/api/v1', timeout: 15000 });
+const BASE = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL}/api/v1`
+  : '/api/v1';
+
+const client = axios.create({ baseURL: BASE, timeout: 30000 });
 
 client.interceptors.request.use((config) => {
   const token = localStorage.getItem('elan_token');

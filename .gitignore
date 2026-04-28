@@ -39,8 +39,11 @@ htmlcov/
 
 # Models, raw data, and large artifacts
 data/raw/
-models/saved/
-*.joblib
+# Keep old model versions out; latest 3 are committed for deployment
+models/saved/*_2026040*.joblib
+models/saved/*_2026032*.joblib
+models/saved/*_2026010*.joblib
+models/saved/*_evaluation_*.json
 *.pkl
 *.h5
 preventive-health-assistant.zip
