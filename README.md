@@ -145,8 +145,8 @@ NHANES (National Health and Nutrition Examination Survey) — CDC. Cycles 2015�
 | Model | AUC-ROC | Recall | Precision | Threshold | Notes |
 |-------|---------|--------|-----------|-----------|-------|
 | **Diabetes** | **0.967** | 72.7% | 99.7% | 0.50 | Standard F1 threshold |
-| **CVD** | **0.847** | **83.4%** | 28.4% | 0.445 | F₂-optimised (recall-weighted) |
-| **Hypertension** | 0.769 | **93.4%** | 32.9% | 0.388 | F₂-optimised; BP excluded from features |
+| **CVD** | **0.847** | **83.4%** | 28.4% | 0.30 | F₂-optimised (recall-weighted) |
+| **Hypertension** | 0.769 | **93.4%** | 32.9% | 0.30 | F₂-optimised; BP excluded from features |
 
 CVD and HTN use **F-beta (β=2) threshold optimisation** on the held-out test set — the same strategy used in cardiovascular screening tools where a false negative (missed case) is far more costly than a false positive.
 
