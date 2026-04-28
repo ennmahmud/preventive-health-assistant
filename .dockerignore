@@ -19,8 +19,10 @@ frontend/.vite/
 data/raw/
 data/users.db
 
-# Trained models — mounted as volumes in compose
-models/saved/*.joblib
+# Older model runs excluded; the 3 latest .joblib files are included for Render
+models/saved/*_2026040*.joblib
+models/saved/*_2026032*.joblib
+models/saved/*_2026010*.joblib
 models/saved/*.pkl
 
 # Notebooks (not needed at runtime)
