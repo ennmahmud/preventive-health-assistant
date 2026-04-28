@@ -19,10 +19,11 @@ RUN pip install --no-cache-dir -r requirements.prod.txt
 # ── Application code ──────────────────────────────────────────────────────────
 COPY config/   config/
 COPY src/      src/
+COPY models/   models/
 COPY data/cohort_averages.json data/cohort_averages.json
 
-# Runtime directories (populated by volumes or init_db at startup)
-RUN mkdir -p data/profiles data/processed models/saved
+# Runtime directories
+RUN mkdir -p data/profiles data/processed
 
 # Non-root user for security
 RUN useradd --no-create-home --shell /bin/false appuser \
