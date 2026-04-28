@@ -1,6 +1,8 @@
 /* API client for the Preventive Health Assistant backend. */
 
-const BASE = '/api/v1';
+const BASE = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL}/api/v1`
+  : '/api/v1';
 
 /* Attach the user's JWT (or fall back to no auth in dev) to every request. */
 function authHeaders(extra = {}) {
