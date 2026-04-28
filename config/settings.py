@@ -150,12 +150,16 @@ API_CONFIG = {
     "host": "0.0.0.0",
     "port": 8000,
     "debug": os.getenv("DEBUG", "False").lower() == "true",
-    "cors_origins": [
-        "http://localhost:3000",    # React CRA dev server
-        "http://127.0.0.1:3000",
-        "http://localhost:5173",    # Vite dev server
-        "http://127.0.0.1:5173",
-    ],
+    "cors_origins": (
+        os.getenv("CORS_ORIGINS", "").split(",")
+        if os.getenv("CORS_ORIGINS")
+        else [
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+        ]
+    ),
 }
 
 # Logging Configuration
