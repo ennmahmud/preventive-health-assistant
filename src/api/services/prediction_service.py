@@ -57,10 +57,8 @@ class PredictionService:
             self.model_path = model_path
             self.model_version = model_path.stem.replace("diabetes_model_", "")
 
-            # Initialize SHAP explainer with a sample background dataset
-            self.explainer = SHAPExplainer(self.model.model, feature_names=self.model.feature_names)
-            # Create a minimal background dataset for SHAP initialization
-            self._initialize_explainer()
+            # SHAP explainer is initialized lazily on first prediction call
+            # to keep startup memory below Render's 512 MB free-tier limit.
             self._ready = True
 
             logger.info(f"Model loaded successfully (version={self.model_version})")
@@ -358,7 +356,10 @@ class PredictionService:
             "model_version": self.model_version,
         }
 
-        if include_explanation and self.explainer:
+        if include_explanation:
+            if self.explainer is None:
+                self.explainer = SHAPExplainer(self.model.model, feature_names=self.model.feature_names)
+                self._initialize_explainer()
             result["explanation"] = self.explainer.explain_prediction(
                 features_df, self.model.feature_names
             )

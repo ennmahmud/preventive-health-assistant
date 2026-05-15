@@ -53,10 +53,7 @@ class CVDPredictionService:
             self.model_path = model_path
             self.model_version = model_path.stem.replace("cvd_model_", "")
 
-            self.explainer = SHAPExplainer(
-                self.model.model, feature_names=self.model.feature_names
-            )
-            self._initialize_explainer()
+            # SHAP explainer initialised lazily on first prediction call.
             self._ready = True
 
             logger.info(f"CVD model loaded (version={self.model_version})")
@@ -316,7 +313,10 @@ class CVDPredictionService:
             "model_version": self.model_version,
         }
 
-        if include_explanation and self.explainer:
+        if include_explanation:
+            if self.explainer is None:
+                self.explainer = SHAPExplainer(self.model.model, feature_names=self.model.feature_names)
+                self._initialize_explainer()
             result["explanation"] = self.explainer.explain_prediction(
                 features_df, self.model.feature_names
             )
