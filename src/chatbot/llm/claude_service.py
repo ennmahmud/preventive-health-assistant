@@ -56,17 +56,26 @@ class ClaudeHealthService:
     """Intelligent health explanation and conversation service powered by Claude."""
 
     _SYSTEM_PROMPT = (
-        "You are an expert preventive health coach embedded in a lifestyle risk "
-        "assessment app. You explain medical risk assessments in plain English, "
-        "offer actionable lifestyle advice, and always remind users to consult a "
-        "healthcare professional for medical decisions. Be warm, concise, and "
-        "evidence-based. Never diagnose or prescribe."
+        "You are an expert preventive health coach embedded in Élan — a preventive health "
+        "risk assessment app. Élan uses AI/ML models trained on NHANES survey data to assess "
+        "risk for Type 2 Diabetes, Cardiovascular Disease (CVD), and Hypertension. "
+        "The chatbot collects lifestyle information through conversation — no lab results needed. "
+        "You explain medical risk assessments in plain English, offer actionable lifestyle advice, "
+        "and always remind users to consult a healthcare professional for medical decisions. "
+        "Be warm, concise, and evidence-based. Never diagnose or prescribe."
+    )
+
+    # Separate system prompt for JSON extraction — kept terse to keep output clean
+    _EXTRACTOR_SYSTEM = (
+        "You are a precise data extractor for a health assessment chatbot. "
+        "Extract structured health data from user messages or identify off-topic questions. "
+        "Always respond with valid JSON only — no markdown, no explanation."
     )
 
     def __init__(self):
         self._available = False
         self._client = None
-        self._model = "claude-3-haiku-20240307"
+        self._model = "claude-haiku-4-5-20251001"
         try:
             import anthropic
 
@@ -202,6 +211,88 @@ Explain:
 Be specific and encouraging. 3-4 short paragraphs."""
 
         return self._call([{"role": "user", "content": prompt}], max_tokens=400)
+
+    def interpret_assessment_answer(
+        self,
+        question_text: str,
+        expected_fields: List[str],
+        user_message: str,
+        condition: str = "",
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Middleware extraction: interpret a free-text reply to an assessment question.
+
+        Called when regex entity extraction and the answer normalizer both failed to
+        populate one or more fields the current question needs.
+
+        Returns:
+            {
+              "fields": {"field": value, ...},  # extracted values (may be empty)
+              "is_side_question": bool,          # True if user went off-topic
+              "side_answer": str | None,         # answer to off-topic question
+            }
+        or None if Claude is unavailable or the API call fails.
+        """
+        if not self._available:
+            return None
+
+        import json, re as _re
+
+        _field_guide = {
+            "age": "integer (years, 1–120)",
+            "gender": '"male" or "female"',
+            "activity_level": '"sedentary", "light", "moderate", or "active"',
+            "diet_quality": '"poor", "mixed", or "healthy"',
+            "sleep_hours": "integer hours per night",
+            "smoking_status": '"never", "former", or "current"',
+            "family_diabetes": "true or false",
+            "family_cvd": "true or false",
+            "family_htn": "true or false",
+            "alcohol_use": '"none", "light", "moderate", or "heavy"',
+            "stress_level": '"low", "moderate", or "high"',
+            "salt_intake": '"low", "moderate", or "high"',
+            "sugar_intake": '"low", "moderate", or "high"',
+            "height": "number in cm",
+            "weight": "number in kg",
+        }
+
+        field_hints = "\n".join(
+            f'  "{f}": {_field_guide.get(f, "appropriate value")}'
+            for f in expected_fields
+        )
+        condition_name = _CONDITION_NAMES.get(condition, condition or "health")
+
+        prompt = (
+            f'A health chatbot is collecting data for a {condition_name} risk assessment.\n\n'
+            f'Chatbot asked: "{question_text}"\n'
+            f'User replied: "{user_message}"\n\n'
+            f"Extract these fields if the user is answering the question:\n{field_hints}\n\n"
+            "If answering: "
+            '{"fields": {...extracted values...}, "is_side_question": false, "side_answer": null}\n'
+            "If off-topic / asking something else: "
+            '{"fields": {}, "is_side_question": true, "side_answer": "...brief answer..."}\n\n'
+            "JSON:"
+        )
+
+        raw = self._call(
+            [{"role": "user", "content": prompt}],
+            max_tokens=250,
+            system=self._EXTRACTOR_SYSTEM,
+        )
+        if not raw:
+            return None
+
+        try:
+            return json.loads(raw)
+        except json.JSONDecodeError:
+            m = _re.search(r"\{.*\}", raw, _re.DOTALL)
+            if m:
+                try:
+                    return json.loads(m.group())
+                except json.JSONDecodeError:
+                    pass
+        logger.warning("Could not parse Claude extraction response: %.200s", raw)
+        return None
 
     # Internal helpers
 

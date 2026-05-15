@@ -101,6 +101,24 @@ class ConversationManager:
         if session.active_assessment:
             self._handle_yes_no_for_current_question(session, message)
 
+        # Claude middleware: extract assessment answers that regex/normalizer missed,
+        # or answer off-topic questions inline before re-asking the current question.
+        claude_side_answer: Optional[str] = None
+        if session.active_assessment and session.asked_question_ids:
+            claude_side_answer = self._claude_extract_if_needed(session, message)
+
+        if claude_side_answer:
+            re_ask = self._collect_or_predict(session)
+            reply = f"{claude_side_answer}\n\n---\n{re_ask}"
+            session.add_message("assistant", reply)
+            return {
+                "session_id": session.session_id,
+                "reply": reply,
+                "assessment_complete": False,
+                "result": None,
+                "profile_updated": False,
+            }
+
         # Classify intent
         intent = classify_intent(message)
         logger.info(
@@ -354,6 +372,62 @@ class ConversationManager:
         yn = answer_normalizer.normalize_yes_no(message)
         if yn in (question.option_keys or []):
             return yn
+        return None
+
+    def _claude_extract_if_needed(self, session: Session, message: str) -> Optional[str]:
+        """
+        Middleware: call Claude when regex + answer_normalizer didn't populate
+        the fields the current question needs.
+
+        Merges any extracted values into session.lifestyle_answers.
+        Returns a side_answer string if the user went off-topic, else None.
+        """
+        if not session.asked_question_ids or not claude_service._available:
+            return None
+
+        last_qid = session.asked_question_ids[-1]
+        condition = session.active_assessment
+
+        from src.chatbot.questions.question_bank import (
+            CONDITION_QUESTIONS,
+            DEMOGRAPHIC_QUESTIONS,
+            LIFESTYLE_QUESTIONS,
+        )
+
+        all_questions = (
+            DEMOGRAPHIC_QUESTIONS
+            + LIFESTYLE_QUESTIONS
+            + CONDITION_QUESTIONS.get(condition, [])
+        )
+        current_q = next((q for q in all_questions if q.id == last_qid), None)
+        if not current_q or not current_q.maps_to:
+            return None
+
+        all_answers = {**session.lifestyle_answers, **session.metrics}
+        missing = [f for f in current_q.maps_to if f not in all_answers]
+        if not missing:
+            return None  # already have what we need
+
+        extraction = claude_service.interpret_assessment_answer(
+            question_text=current_q.text,
+            expected_fields=missing,
+            user_message=message,
+            condition=condition or "",
+        )
+        if not extraction:
+            return None
+
+        for field, value in extraction.get("fields", {}).items():
+            if field in missing and value is not None:
+                session.lifestyle_answers[field] = value
+                logger.info(
+                    "Session %s: Claude extracted %s=%r",
+                    session.session_id, field, value,
+                )
+
+        if extraction.get("is_side_question") and extraction.get("side_answer"):
+            return extraction["side_answer"]
+
         return None
 
     def _run_prediction(self, session: Session, profile: Any) -> str:
