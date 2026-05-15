@@ -235,9 +235,21 @@ class HypertensionPredictionService:
         features["smoking_status_Never"]  = 1.0 if smoking == "never"  else 0.0
 
         # One-hot: activity_level (drop_first → 'High' is reference)
-        features["activity_level_Low"]       = 0.0
-        features["activity_level_Moderate"]  = 0.0
-        features["activity_level_Sedentary"] = 1.0
+        _act_score = (
+            int(bool(metrics.get("vigorous_work"))) * 2
+            + int(bool(metrics.get("moderate_work")))
+            + int(bool(metrics.get("vigorous_rec"))) * 2
+            + int(bool(metrics.get("moderate_rec")))
+        )
+        _act_level = (
+            "High"      if _act_score >= 4 else
+            "Moderate"  if _act_score >= 2 else
+            "Low"       if _act_score >= 1 else
+            "Sedentary"
+        )
+        features["activity_level_Low"]       = 1.0 if _act_level == "Low"       else 0.0
+        features["activity_level_Moderate"]  = 1.0 if _act_level == "Moderate"  else 0.0
+        features["activity_level_Sedentary"] = 1.0 if _act_level == "Sedentary" else 0.0
 
         # One-hot: bmi_category (drop_first → 'Normal' is reference)
         bmi_cat = self._get_bmi_category(bmi)

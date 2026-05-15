@@ -14,6 +14,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.api.main import app
 from src.api.services.prediction_service import prediction_service
+import src.api.auth as _auth
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -37,9 +38,13 @@ def client():
     Create a test client for the FastAPI app.
 
     TestClient allows us to make HTTP requests without running the server.
+    Auth is disabled so tests work regardless of .env API_KEY setting.
     """
+    original = _auth._API_KEY
+    _auth._API_KEY = None
     with TestClient(app) as test_client:
         yield test_client
+    _auth._API_KEY = original
 
 
 @pytest.fixture

@@ -14,6 +14,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from src.api.main import app
 from src.api.services.cvd_prediction_service import cvd_prediction_service
 from src.api.services.hypertension_prediction_service import hypertension_prediction_service
+import src.api.auth as _auth
 
 
 # Module-level flags set by the autouse fixture (evaluated at test-session startup)
@@ -41,8 +42,11 @@ def skip_if_no_cvd():
 
 @pytest.fixture
 def client():
+    original = _auth._API_KEY
+    _auth._API_KEY = None
     with TestClient(app) as c:
         yield c
+    _auth._API_KEY = original
 
 
 # ── Shared metric fixtures ────────────────────────────────────────────────────

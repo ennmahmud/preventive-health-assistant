@@ -13,12 +13,16 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from src.api.main import app
 from src.chatbot.handlers.session import session_store
+import src.api.auth as _auth
 
 
 @pytest.fixture
 def client():
+    original = _auth._API_KEY
+    _auth._API_KEY = None
     with TestClient(app) as c:
         yield c
+    _auth._API_KEY = original
 
 
 def chat(client, message, session_id=None):

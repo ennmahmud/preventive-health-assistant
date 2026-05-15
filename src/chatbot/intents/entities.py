@@ -110,6 +110,24 @@ _SEDENTARY_RE = re.compile(
     re.IGNORECASE,
 )
 
+# Categorical activity level — matches the multiple-choice options presented in the UI
+_ACTIVITY_SEDENTARY_RE = re.compile(
+    r"\b(?:mostly\s+sitting|desk\s+job|watching\s+tv|resting|barely\s+move|very\s+inactive|couch|not\s+(?:very\s+)?active)\b",
+    re.IGNORECASE,
+)
+_ACTIVITY_LIGHT_RE = re.compile(
+    r"\b(?:light(?:ly)?(?:\s+(?:activity|exercise|walks?|household))?|occasional\s+walks?|household\s+chores?|light\s+chores?)\b",
+    re.IGNORECASE,
+)
+_ACTIVITY_MODERATE_RE = re.compile(
+    r"\b(?:moderate(?:ly)?(?:\s+(?:activity|exercise|walks?|active))?|regular\s+walks?|cycling|gym\s*\d[\s-]?\d\s*(?:times?|x)?\s*(?:a\s+)?(?:week)?|moderately\s+active)\b",
+    re.IGNORECASE,
+)
+_ACTIVITY_VIGOROUS_RE = re.compile(
+    r"\b(?:very\s+active|vigorously?|daily\s+(?:vigorous|exercise)|physically\s+demanding|highly\s+active|intense(?:ly)?|athlete)\b",
+    re.IGNORECASE,
+)
+
 _GENDER_MALE_RE = re.compile(
     r"\b(?:i'?m\s+)?(?:male|man|boy|gentleman|he|his)\b",
     re.IGNORECASE,
@@ -221,9 +239,23 @@ def extract_entities(message: str) -> Dict[str, Any]:
     if (m := _WAIST_RE.search(msg)):
         entities["waist_circumference"] = _num(m.group(1))
 
-    # Sedentary minutes
+    # Sedentary minutes — numeric ("sitting for 480 min")
     if (m := _SEDENTARY_RE.search(msg)):
         entities["sedentary_minutes"] = int(float(m.group(1)))
+    # Categorical activity level — maps UI multiple-choice options to sedentary_minutes
+    # and activity flags so the prediction services compute the right activity_level one-hot.
+    # Only apply if no numeric sedentary_minutes was already extracted.
+    elif _ACTIVITY_VIGOROUS_RE.search(msg):
+        entities["sedentary_minutes"] = 120
+        entities["vigorous_rec"] = 1
+        entities["vigorous_work"] = 1
+    elif _ACTIVITY_MODERATE_RE.search(msg):
+        entities["sedentary_minutes"] = 240
+        entities["moderate_rec"] = 1
+    elif _ACTIVITY_LIGHT_RE.search(msg):
+        entities["sedentary_minutes"] = 420
+    elif _ACTIVITY_SEDENTARY_RE.search(msg):
+        entities["sedentary_minutes"] = 600
 
     # Smoking status (order matters — former before current)
     if _SMOKING_NEVER_RE.search(msg):
