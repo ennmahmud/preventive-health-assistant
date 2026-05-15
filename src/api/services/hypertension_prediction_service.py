@@ -20,8 +20,6 @@ import pandas as pd
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.ml.models.hypertension_model import HypertensionRiskModel
-from src.ml.explainability import SHAPExplainer
 from src.api.schemas.hypertension import HypertensionMetricsInput
 from config import MODELS_DIR
 
@@ -32,8 +30,8 @@ class HypertensionPredictionService:
     """Service for loading and querying the hypertension risk model."""
 
     def __init__(self):
-        self.model: Optional[HypertensionRiskModel] = None
-        self.explainer: Optional[SHAPExplainer] = None
+        self.model: Optional[Any] = None
+        self.explainer: Optional[Any] = None
         self.model_path: Optional[Path] = None
         self.model_version: str = "unknown"
         self._ready: bool = False
@@ -42,6 +40,7 @@ class HypertensionPredictionService:
 
     def load_model(self, model_path: Optional[Path] = None) -> bool:
         """Load the latest hypertension model or a specified one."""
+        from src.ml.models.hypertension_model import HypertensionRiskModel  # deferred: xgboost is heavy
         try:
             if model_path is None:
                 model_path = self._find_latest_model()
@@ -340,6 +339,7 @@ class HypertensionPredictionService:
 
         if include_explanation:
             if self.explainer is None:
+                from src.ml.explainability import SHAPExplainer  # deferred: shap is heavy
                 self.explainer = SHAPExplainer(self.model.model, feature_names=self.model.feature_names)
                 self._initialize_explainer()
             result["explanation"] = self.explainer.explain_prediction(
