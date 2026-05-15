@@ -315,8 +315,10 @@ class PredictionService:
 
     def predict(self, metrics: Union[Dict[str, Any], HealthMetricsInput], include_explanation: bool = True) -> Dict[str, Any]:
         """Generate diabetes risk prediction."""
-        if not self.is_ready():
-            raise RuntimeError("Model not loaded.")
+        if self.model is None:
+            self.load_model()
+        if not self._ready:
+            raise RuntimeError("Diabetes model not available — run train_diabetes.py first.")
 
         # Convert Pydantic model to dict if necessary
         if hasattr(metrics, 'model_dump'):

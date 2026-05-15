@@ -281,8 +281,10 @@ class HypertensionPredictionService:
         include_explanation: bool = True,
     ) -> Dict[str, Any]:
         """Generate a hypertension risk prediction."""
-        if not self.is_ready():
-            raise RuntimeError("Hypertension model not loaded.")
+        if self.model is None:
+            self.load_model()
+        if not self._ready:
+            raise RuntimeError("Hypertension model not available — run train_hypertension.py first.")
 
         if hasattr(metrics, "model_dump"):
             metrics = metrics.model_dump()

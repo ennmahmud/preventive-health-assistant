@@ -77,35 +77,9 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.error(f"✗ Failed to initialise database: {e}")
 
-    # Load the diabetes risk model
-    try:
-        success = prediction_service.load_model()
-        if success:
-            logger.info("✓ Diabetes risk model loaded successfully")
-        else:
-            logger.warning("⚠ Failed to load diabetes risk model")
-    except Exception as e:
-        logger.error(f"✗ Error loading diabetes model: {e}")
-
-    # Load the CVD risk model (optional — trains separately)
-    try:
-        success = cvd_prediction_service.load_model()
-        if success:
-            logger.info("✓ CVD risk model loaded successfully")
-        else:
-            logger.warning("⚠ CVD model not found — run train_cvd.py to train it")
-    except Exception as e:
-        logger.error(f"✗ Error loading CVD model: {e}")
-
-    # Load the hypertension risk model (optional — trains separately)
-    try:
-        success = hypertension_prediction_service.load_model()
-        if success:
-            logger.info("✓ Hypertension risk model loaded successfully")
-        else:
-            logger.warning("⚠ Hypertension model not found — run train_hypertension.py to train it")
-    except Exception as e:
-        logger.error(f"✗ Error loading hypertension model: {e}")
+    # Models are loaded lazily on the first prediction request to keep
+    # startup RAM below Render's 512 MB free-tier limit.
+    logger.info("✓ ML models will load on first prediction request (lazy init)")
 
     yield  # Application runs here
 

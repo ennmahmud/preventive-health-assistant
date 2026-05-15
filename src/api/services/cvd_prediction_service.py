@@ -279,8 +279,10 @@ class CVDPredictionService:
         include_explanation: bool = True,
     ) -> Dict[str, Any]:
         """Generate a CVD risk prediction."""
-        if not self.is_ready():
-            raise RuntimeError("CVD model not loaded.")
+        if self.model is None:
+            self.load_model()
+        if not self._ready:
+            raise RuntimeError("CVD model not available — run train_cvd.py first.")
 
         if hasattr(metrics, "model_dump"):
             metrics = metrics.model_dump()
