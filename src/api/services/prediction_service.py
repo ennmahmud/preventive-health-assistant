@@ -81,7 +81,8 @@ class PredictionService:
         return max(candidates, key=lambda p: p.stat().st_mtime)
 
     def is_ready(self) -> bool:
-        """Check if the service is ready."""
+        if self.model is None:
+            self.load_model()
         return self._ready and self.model is not None
 
     def _initialize_explainer(self) -> None:
