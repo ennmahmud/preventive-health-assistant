@@ -99,6 +99,7 @@ class DiabetesAssessmentRequest(BaseModel):
     metrics: HealthMetricsInput
     include_explanation: bool = Field(True, description="Include SHAP-based explanation")
     include_recommendations: bool = Field(True, description="Include health recommendations")
+    user_id: Optional[str] = Field(None, description="Logged-in user ID — persists result to DB")
 
 
 # ============== Response Schemas ==============

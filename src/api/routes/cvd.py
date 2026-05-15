@@ -156,6 +156,13 @@ async def assess_cvd_risk(request: CVDAssessmentRequest):
             recs = cvd_prediction_service.generate_recommendations(metrics, result)
             response_data["recommendations"] = [HealthRecommendation(**r) for r in recs]
 
+        if request.user_id:
+            try:
+                from src.profile.profile_service import profile_service
+                profile_service.save_assessment(request.user_id, None, "cvd", metrics, result)
+            except Exception as _save_err:
+                logger.warning("Failed to persist CVD assessment: %s", _save_err)
+
         return CVDAssessmentResponse(**response_data)
 
     except Exception as e:

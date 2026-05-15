@@ -152,6 +152,14 @@ async def assess_diabetes_risk(request: DiabetesAssessmentRequest):
                 HealthRecommendation(**rec) for rec in recs
             ]
 
+        # Persist result for logged-in users so history is available from any device
+        if request.user_id:
+            try:
+                from src.profile.profile_service import profile_service
+                profile_service.save_assessment(request.user_id, None, "diabetes", metrics, result)
+            except Exception as _save_err:
+                logger.warning("Failed to persist diabetes assessment: %s", _save_err)
+
         return DiabetesAssessmentResponse(**response_data)
 
     except Exception as e:
