@@ -84,6 +84,19 @@ _HELP_PATTERNS = re.compile(
     re.IGNORECASE,
 )
 
+# Informational questions ("what is X?", "how does X work?", "explain X") should
+# be answered by Claude, not trigger an assessment — even when the message contains
+# a condition keyword like "diabetes" or "cholesterol".
+_INFORMATIONAL_RE = re.compile(
+    r"^\s*(what\s+(is|are|does|do|causes?|happens?|means?|'?s)\b"
+    r"|how\s+(does|do|is|are|can|to)\b"
+    r"|why\s+(does|do|is|are)\b"
+    r"|explain\b|tell\s+me\s+(about|more)\b"
+    r"|define\b|describe\b|can\s+you\s+explain\b"
+    r"|difference\s+between\b)",
+    re.IGNORECASE,
+)
+
 
 # ── Classifier ───────────────────────────────────────────────────────────────
 
@@ -102,16 +115,24 @@ def classify_intent(message: str) -> Intent:
 
     # --- Condition-specific assessment intents ---
     has_assess = bool(_ASSESS_TRIGGER.search(msg))
+    is_informational = bool(_INFORMATIONAL_RE.search(msg))
 
     if _DIABETES_PATTERNS.search(msg):
+        # Informational question without an explicit assessment trigger → Claude
+        if is_informational and not has_assess:
+            return Intent("unknown", 0.50)
         return Intent("assess_diabetes", 0.90 if has_assess else 0.70)
 
     # Hypertension checked before CVD: BP keywords (blood pressure, systolic, etc.)
     # belong to hypertension and must not be captured by the CVD branch.
     if _HYPERTENSION_PATTERNS.search(msg):
+        if is_informational and not has_assess:
+            return Intent("unknown", 0.50)
         return Intent("assess_hypertension", 0.90 if has_assess else 0.70)
 
     if _CVD_PATTERNS.search(msg):
+        if is_informational and not has_assess:
+            return Intent("unknown", 0.50)
         return Intent("assess_cvd", 0.90 if has_assess else 0.70)
 
     # --- Result / explanation (checked before generic assess fallback so
